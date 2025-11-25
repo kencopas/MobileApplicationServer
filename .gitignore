@@ -1,4 +1,5 @@
 venv
 __pycache__
-sessions.json
 logs
+data/session.db
+.venv

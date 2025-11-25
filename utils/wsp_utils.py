@@ -6,6 +6,9 @@ from models.wsp_schemas import WSPEvent
 import pydantic
 
 
+EventHandler = Callable[[ServerConnection, Dict | None], Awaitable[WSPEvent]]
+
+
 def validate_wsp(event_data: str) -> WSPEvent:
     """Validate incoming event data against WSPEvent schema.
     
@@ -30,9 +33,6 @@ def validate_wsp(event_data: str) -> WSPEvent:
         )
     except pydantic.ValidationError as e:
         raise ValueError(f"Event data validation error: {e}")
-    
-
-EventHandler = Callable[[ServerConnection, Dict | None], Awaitable[WSPEvent]]
 
 
 class EventHandlerRegistry:
