@@ -33,6 +33,10 @@ class ColorFormatter(logging.Formatter):
 def get_logger(name: str = "server", level=logging.INFO) -> logging.Logger:
     """Create a logger with both console + rotating file handlers."""
 
+    if not LOG_FILE.exists():
+        LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        LOG_FILE.touch()
+
     logger = logging.getLogger(name)
 
     # Prevent duplicate handlers if called multiple times
