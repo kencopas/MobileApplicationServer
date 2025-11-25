@@ -1,6 +1,7 @@
 import sqlite3
 from typing import Any, Optional, Dict, Literal
 import json
+from pathlib import Path
 
 
 class SessionManager:
@@ -21,6 +22,8 @@ class SessionManager:
 
     def _initialize_db(self):
         """Initialize the database tables if they do not exist."""
+
+        Path(self.persist_path).parent.mkdir(parents=True, exist_ok=True)
         
         # Create users table
         self.cursor.execute("""
