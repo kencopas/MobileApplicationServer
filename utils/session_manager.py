@@ -113,11 +113,23 @@ class SessionManager:
             self.create_user(user_id)
         return user_data
     
-    def save(self, user_id: str, session_id: str, state: Dict) -> None:
+    def save(self, user_id: str, session_id: str, state: Any) -> None:
         """Save the state of a session by user_id and session_id."""
+
+        if isinstance(state, Dict):
+            state_str = json.dumps(state)
+        elif hasattr(state, "__dict__"):
+            state_str = json.dumps(state.__dict__)
+        elif hasattr(state, "to_dict") and callable(getattr(state, "to_dict")):
+            state_str = json.dumps(state.to_dict())
+        elif hasattr(state, "model_dump_json") and callable(getattr(state, "model_dump_json")):
+            state_str = state.model_dump_json()
+        else:
+            state_str = str(state)
+
         self.cursor.execute(
             "REPLACE INTO sessions (session_id, user_id, state) VALUES (?, ?, ?)",
-            (session_id, user_id, json.dumps(state))
+            (session_id, user_id, state_str)
         )
         self.conn.commit()
         self.log("INFO", f"Saved state for session: {session_id} of user: {user_id}")
