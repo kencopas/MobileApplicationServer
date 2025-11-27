@@ -1,24 +1,17 @@
 import sqlite3
-from typing import Any, Optional, Dict, Literal
+from typing import Any, Optional, Dict
 import json
 from pathlib import Path
+from logging import Logger
 
 
 class SessionManager:
-    def __init__(self, persist_path: str = "sessions.db", logger: Optional[Any] = None):
+    def __init__(self, log: Logger, persist_path: str = "sessions.db"):
         self.persist_path = persist_path
         self.conn = sqlite3.connect(self.persist_path, check_same_thread=False)
         self.cursor = self.conn.cursor()
         self._initialize_db()
-        self.logger = logger
-
-    def log(self, level: Literal["INFO", "ERROR"], text: str) -> None:
-        if self.logger:
-            custom_logger = getattr(self.logger, level.lower(), None)
-            if callable(custom_logger):
-                custom_logger(text)
-                return
-        print(f"[{level}] {text}")
+        self.log = log
 
     def _initialize_db(self):
         """Initialize the database tables if they do not exist."""
@@ -56,7 +49,7 @@ class SessionManager:
         try:
             return json.loads(data[0]) if data else {}
         except (json.JSONDecodeError, IndexError):
-            self.log("ERROR", f"Failed to decode user data for user_id: {user_id}")
+            self.log.error(f"Failed to decode user data for user_id: {user_id}")
             return {}
     
     def create_user(self, user_id: str) -> None:
@@ -66,7 +59,7 @@ class SessionManager:
             (user_id, json.dumps({'exists': True}))
         )
         self.conn.commit()
-        self.log("INFO", f"Created new user: {user_id}")
+        self.log.info(f"Created new user: {user_id}")
     
     def create_session(self, user_id: str, session_id: str, state: Dict) -> None:
         """Create a new session with the given session_id, user_id, and state."""
@@ -75,7 +68,7 @@ class SessionManager:
             (session_id, user_id, json.dumps(state))
         )
         self.conn.commit()
-        self.log("INFO", f"Created new session: {session_id} for user: {user_id}")
+        self.log.info(f"Created new session: {session_id} for user: {user_id}")
     
     def get_session_state(self, user_id: str, session_id: Optional[str] = None) -> Dict:
         """Get the state of a session by user_id and session_id, or latest session if no session_id provided."""
@@ -93,17 +86,20 @@ class SessionManager:
             )
 
         result = self.cursor.fetchone()
+        self.log.info(f"Fetched session state for user_id: {user_id}, session_id: {session_id}")
+        state_data = json.loads(result[0]) if result else {}
+        self.log.info(f"Session state data: {state_data}")
         try:
-            return json.loads(result[0]) if result else {}
+            return state_data
         except (json.JSONDecodeError, IndexError):
-            self.log("ERROR", f"Failed to decode session state for user_id: {user_id}, session_id: {session_id}")
+            self.log.error(f"Failed to decode session state for user_id: {user_id}, session_id: {session_id}")
             return {}
 
     def initialize_session(self, user_id: str, session_id: str) -> Dict:
         """Fetch the latest session state, create a new session with that state, return state."""
         latest_state = self.get_session_state(user_id) if user_id else {}
         self.create_session(user_id, session_id, latest_state)
-        self.log("INFO", f"Initialized session: {session_id} for user: {user_id}")
+        self.log.info(f"Initialized session: {session_id} for user: {user_id}")
         return latest_state
 
     def get_or_create_user(self, user_id: str) -> Dict:
@@ -118,12 +114,12 @@ class SessionManager:
 
         if isinstance(state, Dict):
             state_str = json.dumps(state)
-        elif hasattr(state, "__dict__"):
-            state_str = json.dumps(state.__dict__)
         elif hasattr(state, "to_dict") and callable(getattr(state, "to_dict")):
             state_str = json.dumps(state.to_dict())
         elif hasattr(state, "model_dump_json") and callable(getattr(state, "model_dump_json")):
             state_str = state.model_dump_json()
+        elif hasattr(state, "__dict__"):
+            state_str = json.dumps(state.__dict__)
         else:
             state_str = str(state)
 
@@ -132,4 +128,4 @@ class SessionManager:
             (session_id, user_id, state_str)
         )
         self.conn.commit()
-        self.log("INFO", f"Saved state for session: {session_id} of user: {user_id}")
+        self.log.info(f"Saved state for session: {session_id} of user: {user_id}")
