@@ -35,7 +35,7 @@ async def save_session_handler(ws: ServerConnection, data: Dict | None) -> WSPEv
 
 
 @event_handler_registry.event("monopolyMove")
-async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEvent:
+async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEvent | None:
     """Handle a Monopoly game move event."""
 
     user_id = data.get("userId")
@@ -50,17 +50,15 @@ async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEv
             error="stateNotFound"
         )
     
-    game_controller.move_player(user_id, session_id)
-    state = game_controller.get_state(user_id)
-
-    await send_wsp_event(ws, WSPEvent(
-        event="stateUpdate",
-        data={
-            "state": state.to_dict()
-        }
-    ))
-
-    return game_controller.handle_landing(user_id)
+    try:
+        game_controller.monopoly_move(user_id, session_id)
+    except Exception as e:
+        log.error(f"Error during handle_monopoly_move for userId {user_id}: {e}")
+        return WSPEvent(
+            event="error",
+            data={"message": "Error processing move", "errorValue": str(e)},
+            error="moveError"
+        )
 
 
 @event_handler_registry.event("sessionInit")

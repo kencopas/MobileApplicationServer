@@ -31,7 +31,7 @@ async def event_router(websocket: ServerConnection) -> None:
             response_event = await event_handler_registry.handle_event(websocket, data)
 
             if not response_event:
-                log.warning(f"No response event generated for incoming event: {data.event}")
+                log.info(f"No response event generated for incoming event: {data.event}")
                 continue
 
             await send_wsp_event(websocket, response_event)

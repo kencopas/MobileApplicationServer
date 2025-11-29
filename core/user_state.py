@@ -88,8 +88,10 @@ class UserState:
         self.money_dollars -= amount
     
     def move_position(self, spaces: int) -> None:
+        """Move the player's position on the board, updates current space accordingly."""
         log.info(f"Moving position for user {self.user_id} by {spaces} spaces")
         self.position = (self.position + spaces) % 40  # Assuming a board with 40 spaces
+        self.update_current_space(self.board_spaces[self.position].space_id)
     
     def update_current_space(self, board_space_id: str) -> None:
         log.info(f"Updating current space for user {self.user_id} to {board_space_id}")

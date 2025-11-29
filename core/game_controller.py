@@ -1,9 +1,12 @@
+from utils.wsp_utils import send_wsp_event
 from .board_space import BoardSpace, PropertySpace, ActionSpace
 from .user_state import UserState
 from .state_manager import StateManager
 import random
 from models.wsp_schemas import WSPEvent
 from utils.logger import get_logger
+from typing import Literal
+from websockets.asyncio.server import ServerConnection
 
 
 log = get_logger("game_controller")
@@ -31,16 +34,16 @@ class GameController:
     
     def move_player(self, user_id: str, session_id: str) -> None:
         """Move a player based on a dice roll and update the current space."""
-        roll = random.randint(2, 12)
-        log.info(f"Player {user_id} rolled a {roll}. Moving...")
+        
         player_state = self.get_state(user_id)
         if player_state is None:
             log.error(f"Cannot move player: No state found for user_id {user_id}")
             return
+
+        roll = random.randint(1, 6) + random.randint(1, 6)
+        log.info(f"Player {user_id} rolled a {roll}. Moving...")
         player_state.move_position(roll)
 
-        new_space = self.board[player_state.position]
-        player_state.update_current_space(new_space.space_id)
         self.state_manager.set_state(user_id, session_id, player_state)
     
     def get_state(self, user_id: str) -> UserState | None:
@@ -59,7 +62,17 @@ class GameController:
         # Set the state in cache and persist it
         self.state_manager.set_state(user_id, session_id, state)
 
-    def handle_landing(self, user_id: str) -> WSPEvent:
+    async def handle_landing(self, ws: ServerConnection, user_id: str, session_id: str) -> None:
+        self.move_player(user_id, session_id)
+        state = self.get_state(user_id)
+
+        await send_wsp_event(ws, WSPEvent(
+            event="stateUpdate",
+            data={
+                "state": state.to_dict()
+            }
+        ))
+
         player_state = self.get_state(user_id)
         current_space_id = player_state.current_space_id
         current_space = next((space for space in self.board if space.space_id == current_space_id), None)
@@ -79,12 +92,5 @@ class GameController:
                 data={
                     "action": current_space.action,
                     "message": f"You landed on {current_space.name} and must perform action: {current_space.action}."
-                }
-            )
-        else:
-            return WSPEvent(
-                event="landedOnSpace",
-                data={
-                    "message": f"You landed on {current_space.name}."
                 }
             )
