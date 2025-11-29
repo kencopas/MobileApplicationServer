@@ -70,7 +70,7 @@ class SessionManager:
         self.conn.commit()
         self.log.info(f"Created new session: {session_id} for user: {user_id}")
     
-    def get_session_state(self, user_id: str, session_id: Optional[str] = None) -> Dict:
+    def get_session_state(self, user_id: str, session_id: Optional[str] = None) -> Dict | None:
         """Get the state of a session by user_id and session_id, or latest session if no session_id provided."""
         if session_id:
             # Fetch by user_id and session_id
@@ -87,8 +87,13 @@ class SessionManager:
 
         result = self.cursor.fetchone()
         self.log.info(f"Fetched session state for user_id: {user_id}, session_id: {session_id}")
+        
+        if not result:
+            return None
+        
         state_data = json.loads(result[0]) if result else {}
-        self.log.info(f"Session state data: {state_data}")
+        state_json = json.dumps(state_data)
+        self.log.info(f"Session state data: {state_json[:100]}{'TRUNCATED' if len(state_json) > 100 else ''}")
         try:
             return state_data
         except (json.JSONDecodeError, IndexError):
@@ -109,8 +114,13 @@ class SessionManager:
             self.create_user(user_id)
         return user_data
     
-    def save(self, user_id: str, session_id: str, state: Any) -> None:
-        """Save the state of a session by user_id and session_id."""
+    def save_session(self, user_id: str, session_id: str, state: Any) -> None:
+        """<b>CURRENTLY DISABLED!!!</b>
+        
+        Save the state of a session by user_id and session_id.
+        """
+
+        return
 
         if isinstance(state, Dict):
             state_str = json.dumps(state)

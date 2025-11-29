@@ -10,7 +10,24 @@ import pydantic
 EventHandler = Callable[[ServerConnection, Dict | None], Awaitable[WSPEvent]]
 
 
-def validate_wsp(event_data: str) -> WSPEvent:
+def get_missing_fields(data: Dict | None, required_fields: list[str]) -> list[str]:
+    """Check for missing required fields in the provided data dictionary.
+    
+    Args:
+        data (Dict | None): The data dictionary to check.
+        required_fields (list[str]): A list of required field names.
+    
+    Returns:
+        list[str]: A list of missing field names.
+    """
+    if data is None:
+        return required_fields
+    
+    missing_fields = [field for field in required_fields if field not in data]
+    return missing_fields
+
+
+def validate_wsp(event_data: str, required_fields: list[str] | None = None) -> WSPEvent:
     """Validate incoming event data against WSPEvent schema.
     
     Args:

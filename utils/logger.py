@@ -49,7 +49,7 @@ def get_logger(name: str = "server", level=logging.INFO) -> logging.Logger:
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     console_format = ColorFormatter(
-        "[%(asctime)s] [%(levelname)s] %(message)s",
+        f"[{name}] [%(levelname)s] %(message)s",
         "%Y-%m-%d %H:%M:%S"
     )
     console_handler.setFormatter(console_format)
