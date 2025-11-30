@@ -41,7 +41,7 @@ async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEv
     user_id = data.get("userId")
     session_id = data.get("sessionId")
 
-    user_state = game_controller.get_state(user_id)
+    user_state = game_controller.state_manager.get_state(user_id)
     if not user_state:
         log.error(f"User state not found for userId: {user_id}")
         return WSPEvent(
@@ -90,7 +90,7 @@ async def handle_session_init(ws: ServerConnection, data: Dict | None) -> WSPEve
     # Restore or create
     game_controller.start_session(user_id=user_id, session_id=session_id)
 
-    user_state = game_controller.get_state(user_id=user_id).to_dict()
+    user_state = game_controller.state_manager.get_state(user_id=user_id).to_dict()
     user_data = game_controller.state_manager.session_manager.get_user_data(user_id)
 
     return WSPEvent(

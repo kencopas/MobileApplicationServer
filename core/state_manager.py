@@ -39,15 +39,19 @@ class StateManager:
         
         if cached_state:
             log.info('Fetching state from cache...')
-            state_data = cached_state.to_dict()
+            return cached_state
         else:
             log.info('Fetching state from persistent storage...')
             state_data = self.session_manager.get_session_state(user_id)
 
-        if state_data is None:
+        if not state_data:
             return None
 
-        return UserState(**state_data) if state_data else None
+        retrieved_state = UserState(**state_data)
+        log.warning('Overwriting cache with retrieved state... Watch for stale object references!')
+        self.user_states[user_id] = retrieved_state  # Cache it
+
+        return retrieved_state
 
     def set_state(self, user_id: str, session_id: str, state: UserState | Dict[str, Any]) -> None:
         """Set or update the state for a given user."""

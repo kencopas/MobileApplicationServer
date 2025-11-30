@@ -2,6 +2,7 @@ from typing import Any, Dict, List
 from .board_space import BoardSpace
 from copy import deepcopy
 from utils.logger import get_logger
+import random
 
 
 log = get_logger("user_state")
@@ -45,15 +46,6 @@ class UserState:
         self.current_space_id = current_space_id
         self._board_spaces = self.construct_board_space(board_spaces)
 
-    def construct_board_space(self, board_spaces: List[BoardSpace] | List[Dict]) -> List[BoardSpace]:
-        constructed_spaces = []
-        for space in board_spaces:
-            if isinstance(space, BoardSpace):
-                constructed_spaces.append(space)
-            elif isinstance(space, dict):
-                constructed_spaces.append(BoardSpace(**space))
-        return constructed_spaces
-
     @property
     def board_spaces(self) -> List[BoardSpace]:
         # Update board spaces to reflect current user state
@@ -64,6 +56,15 @@ class UserState:
                 self._board_spaces[i].visual_properties.occupied_by = None
 
         return self._board_spaces
+
+    def construct_board_space(self, board_spaces: List[BoardSpace] | List[Dict]) -> List[BoardSpace]:
+        constructed_spaces = []
+        for space in board_spaces:
+            if isinstance(space, BoardSpace):
+                constructed_spaces.append(space)
+            elif isinstance(space, dict):
+                constructed_spaces.append(BoardSpace(**space))
+        return constructed_spaces
 
     def get(self, key: str, default: Any = None) -> Any:
         return getattr(self, key, default)
@@ -87,7 +88,13 @@ class UserState:
         log.info(f"Subtracting {amount} from user {self.user_id}'s money")
         self.money_dollars -= amount
     
-    def move_position(self, spaces: int) -> None:
+    def player_move(self) -> None:
+        """Simulate a dice roll and return the total move spaces."""
+        roll = random.randint(1, 6) + random.randint(1, 6)
+        log.info(f"User {self.user_id} rolled a {roll}")
+        self.update_position(roll)
+
+    def update_position(self, spaces: int) -> None:
         """Move the player's position on the board, updates current space accordingly."""
         log.info(f"Moving position for user {self.user_id} by {spaces} spaces")
         self.position = (self.position + spaces) % 40  # Assuming a board with 40 spaces
