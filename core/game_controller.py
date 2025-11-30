@@ -17,6 +17,7 @@ class GameController:
     """Singleton class that manages game logic with session state and board."""
     def __init__(self, board: list[BoardSpace], state_manager: StateManager):
         self.board = self._sort_board(board)
+        self.board_map = {space.space_id: space for space in self.board}
         self.state_manager = state_manager
 
     def _sort_board(self, board: list[BoardSpace]) -> list[BoardSpace]:
@@ -53,7 +54,8 @@ class GameController:
         await state_update(ws, state)
 
         current_space_id = state.current_space_id
-        current_space = next((space for space in self.board if space.space_id == current_space_id), None)
+        current_space = self.board_map.get(current_space_id)
+
         if isinstance(current_space, PropertySpace):
             return WSPEvent(
                 event="landedOnProperty",
