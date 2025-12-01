@@ -51,7 +51,7 @@ async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEv
         )
     
     try:
-        game_controller.monopoly_move(user_id, session_id)
+        await game_controller.monopoly_move(ws, user_id, session_id)
     except Exception as e:
         log.error(f"Error during handle_monopoly_move for userId {user_id}: {e}")
         return WSPEvent(
@@ -59,6 +59,58 @@ async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEv
             data={"message": "Error processing move", "errorValue": str(e)},
             error="moveError"
         )
+
+
+@event_handler_registry.event("buyProperty")
+async def handle_buy_property(ws: ServerConnection, data: Dict | None) -> WSPEvent | None:
+    """Handle a buy property event."""
+
+    user_id = data.get("userId")
+    session_id = data.get("sessionId")
+
+    user_state = game_controller.state_manager.get_state(user_id)
+    if not user_state:
+        log.error(f"User state not found for userId: {user_id}")
+        return WSPEvent(
+            event="error",
+            data={"message": "User state not found", "errorValue": user_id},
+            error="stateNotFound"
+        )
+    
+    try:
+        await game_controller.buy_property(ws, user_id, session_id)
+    except Exception as e:
+        log.error(f"Error during handle_buy_property for userId {user_id}: {e}")
+        return WSPEvent(
+            event="error",
+            data={"message": "Error processing property purchase", "errorValue": str(e)},
+            error="purchaseError"
+        )
+    
+
+@event_handler_registry.event("onlineGame")
+async def handle_online_game(ws: ServerConnection, data: Dict | None) -> WSPEvent:
+    """Handle starting a new online game or connecting to an existing one.
+    
+    Expected Data:
+    ```
+    {
+        "userId": "string",
+        "sessionId": "string",
+        "onlineGameId": "string"
+    }
+    ```
+    """
+    user_id = data.get("userId")
+    session_id = data.get("sessionId")
+    online_game_id = data.get("onlineGameId")
+
+    game_controller.connect_online_game(
+        user_id=user_id,
+        session_id=session_id,
+        online_game_id=online_game_id
+    )
+    
 
 
 @event_handler_registry.event("sessionInit")

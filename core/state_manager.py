@@ -31,6 +31,19 @@ class StateManager:
         except TypeError as e:
             # Handle the case where initial_state has unexpected keys
             raise ValueError(f"Invalid initial state data: {e}")
+        
+    def new_state(self, user_id: str, session_id: str, board_spaces: list[Type]) -> UserState:
+        """Create a new state for a given user."""
+        log.info("Creating new state...")
+        new_state = UserState(
+            user_id=user_id,
+            money_dollars=1500,  # Starting money
+            position=0,
+            current_space_id=board_spaces[0].space_id if board_spaces else "",
+            board_spaces=board_spaces
+        )
+        self.set_state(user_id, session_id, new_state)
+        return new_state
 
     def get_state(self, user_id: str) -> UserState | None:
         """Retrieve the state for a given user."""

@@ -37,6 +37,7 @@ class UserState:
     money_dollars: int
     position: int = 0
     current_space_id: str
+    owned_properties: List[str] = []
     _board_spaces: List[BoardSpace] = []
 
     def __init__(self, user_id: str, money_dollars: int = 0, position: int = 0, current_space_id: str = "", board_spaces: List[BoardSpace] | List[Dict] = []):
@@ -44,6 +45,7 @@ class UserState:
         self.money_dollars = money_dollars
         self.position = position
         self.current_space_id = current_space_id
+        self.owned_properties = []
         self._board_spaces = self.construct_board_space(board_spaces)
 
     @property
@@ -56,6 +58,11 @@ class UserState:
                 self._board_spaces[i].visual_properties.occupied_by = None
 
         return self._board_spaces
+    
+    def add_owned_property(self, property_id: str) -> None:
+        if property_id not in self.owned_properties:
+            log.info(f"Adding property {property_id} to user {self.user_id}'s owned properties")
+            self.owned_properties.append(property_id)
 
     def construct_board_space(self, board_spaces: List[BoardSpace] | List[Dict]) -> List[BoardSpace]:
         constructed_spaces = []
@@ -89,7 +96,7 @@ class UserState:
         self.money_dollars -= amount
     
     def player_move(self) -> None:
-        """Simulate a dice roll and return the total move spaces."""
+        """Simulate a dice roll and update the player position."""
         roll = random.randint(1, 6) + random.randint(1, 6)
         log.info(f"User {self.user_id} rolled a {roll}")
         self.update_position(roll)

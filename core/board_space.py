@@ -1,4 +1,4 @@
-from typing import Optional, Literal, Callable, Literal
+from typing import Optional, Literal, List, Literal
 from pydantic import BaseModel, PrivateAttr, Field
 
 
@@ -6,7 +6,7 @@ class VisualProperties(BaseModel):
     color: Optional[str] = None
     icon: Optional[str] = None
     description: Optional[str] = None
-    occupied_by: Literal['Player', 'Opponent', None] = None
+    occupied_by: Optional[str] = None
 
 
 class BoardSpace(BaseModel):
@@ -18,22 +18,17 @@ class BoardSpace(BaseModel):
 
 
 class PropertySpace(BoardSpace):
-
-    _rent_func: Optional[Callable] = PrivateAttr()
-
     space_type: Literal["property"] = "property"
     purchase_price: int
     mortgage_value: int
-
-    @property
-    def rent_price(self) -> int:
-        _rent_func = getattr(self, "_rent_func") or (lambda self: self.purchase_price // 10)
-        return _rent_func(self)
+    hotels: int = 0
+    rent_prices: List[int] = []
+    owned_by: Optional[str] = None  # user_id of the owner, None if unowned
 
 
 class ActionSpace(BoardSpace):
     space_type: Literal["action"] = "action"
-    action: Literal["tax", "draw_chest", "draw_chance", "collect_200", "go_to_jail", "no_effect"]
+    action: Literal["tax", "draw_chest", "draw_chance", "go_to_jail", "no_effect"]
 
 
 def space_from_json(data: dict) -> BoardSpace:
