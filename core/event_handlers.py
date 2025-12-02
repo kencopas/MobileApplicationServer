@@ -105,13 +105,13 @@ async def handle_online_game(ws: ServerConnection, data: Dict | None) -> WSPEven
     session_id = data.get("sessionId")
     online_game_id = data.get("onlineGameId")
 
-    game_controller.connect_online_game(
+    await game_controller.connect_online_game(
+        ws=ws,
         user_id=user_id,
         session_id=session_id,
         online_game_id=online_game_id
     )
     
-
 
 @event_handler_registry.event("sessionInit")
 async def handle_session_init(ws: ServerConnection, data: Dict | None) -> WSPEvent:
