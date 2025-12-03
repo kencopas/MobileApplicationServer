@@ -1,6 +1,6 @@
 from utils.wsp_utils import send_wsp_event
 from models.wsp_schemas import WSPEvent
-from core.user_state import UserState
+from models.game_state import UserState
 from websockets.asyncio.server import ServerConnection
 from typing import Dict
 

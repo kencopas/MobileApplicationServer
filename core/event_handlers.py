@@ -3,10 +3,12 @@ from utils.logger import get_logger
 from utils.wsp_utils import send_wsp_event, get_missing_fields
 from websockets.asyncio.server import ServerConnection
 from models.wsp_schemas import WSPEvent
-from app import event_handler_registry, game_controller
+from app import event_handler_registry, game_controller, event_bus
+from core.state_manager import get_state_manager
 
 
 log = get_logger("event_handlers")
+state_manager = get_state_manager()
 
 
 @event_handler_registry.event("baseEvent")
@@ -39,26 +41,28 @@ async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEv
     """Handle a Monopoly game move event."""
 
     user_id = data.get("userId")
-    session_id = data.get("sessionId")
+    online_game_id = data.get("onlineGameId")
 
-    user_state = game_controller.state_manager.get_state(user_id)
-    if not user_state:
-        log.error(f"User state not found for userId: {user_id}")
-        return WSPEvent(
-            event="error",
-            data={"message": "User state not found", "errorValue": user_id},
-            error="stateNotFound"
-        )
+    await event_bus.publish("monopolyMove", user_id=user_id, online_game_id=online_game_id)
+
+    # user_state = game_controller.state_manager.get_state(user_id)
+    # if not user_state:
+    #     log.error(f"User state not found for userId: {user_id}")
+    #     return WSPEvent(
+    #         event="error",
+    #         data={"message": "User state not found", "errorValue": user_id},
+    #         error="stateNotFound"
+    #     )
     
-    try:
-        await game_controller.monopoly_move(ws, user_id, session_id)
-    except Exception as e:
-        log.error(f"Error during handle_monopoly_move for userId {user_id}: {e}")
-        return WSPEvent(
-            event="error",
-            data={"message": "Error processing move", "errorValue": str(e)},
-            error="moveError"
-        )
+    # try:
+    #     await game_controller.monopoly_move(ws, user_id, session_id)
+    # except Exception as e:
+    #     log.error(f"Error during handle_monopoly_move for userId {user_id}: {e}")
+    #     return WSPEvent(
+    #         event="error",
+    #         data={"message": "Error processing move", "errorValue": str(e)},
+    #         error="moveError"
+    #     )
 
 
 @event_handler_registry.event("buyProperty")
@@ -88,31 +92,6 @@ async def handle_buy_property(ws: ServerConnection, data: Dict | None) -> WSPEve
         )
     
 
-@event_handler_registry.event("onlineGame")
-async def handle_online_game(ws: ServerConnection, data: Dict | None) -> WSPEvent:
-    """Handle starting a new online game or connecting to an existing one.
-    
-    Expected Data:
-    ```
-    {
-        "userId": "string",
-        "sessionId": "string",
-        "onlineGameId": "string"
-    }
-    ```
-    """
-    user_id = data.get("userId")
-    session_id = data.get("sessionId")
-    online_game_id = data.get("onlineGameId")
-
-    await game_controller.connect_online_game(
-        ws=ws,
-        user_id=user_id,
-        session_id=session_id,
-        online_game_id=online_game_id
-    )
-    
-
 @event_handler_registry.event("sessionInit")
 async def handle_session_init(ws: ServerConnection, data: Dict | None) -> WSPEvent:
     """Handle session initialization or restoration.
@@ -121,12 +100,13 @@ async def handle_session_init(ws: ServerConnection, data: Dict | None) -> WSPEve
     ```
     {
         "sessionId": "string",
-        "userId": "string"
+        "userId": "string",
+        "onlineGameId": "string"
     }
     ```
     """
 
-    missing_fields = get_missing_fields(data, ["sessionId", "userId"])
+    missing_fields = get_missing_fields(data, ["sessionId", "userId", "onlineGameId"])
 
     if missing_fields:
         log.error(f"sessionInit missing fields: {missing_fields}")
@@ -138,19 +118,12 @@ async def handle_session_init(ws: ServerConnection, data: Dict | None) -> WSPEve
 
     session_id = data.get("sessionId")
     user_id = data.get("userId")
+    online_game_id = data.get("onlineGameId")
 
-    # Restore or create
-    game_controller.start_session(user_id=user_id, session_id=session_id)
-
-    user_state = game_controller.state_manager.get_state(user_id=user_id).to_dict()
-    user_data = game_controller.state_manager.session_manager.get_user_data(user_id)
-
-    return WSPEvent(
-        event="sessionAck",
-        data={
-            "userId": user_id,
-            "userData": user_data,
-            "sessionId": session_id,
-            "state": user_state if user_state else {}
-        }
+    await event_bus.publish("session_init",
+        user_id=user_id,
+        session_id=session_id,
+        online_game_id=online_game_id
     )
+
+    return WSPEvent(event="sessionAck")

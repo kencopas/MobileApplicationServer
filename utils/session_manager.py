@@ -5,6 +5,9 @@ from pathlib import Path
 from logging import Logger
 
 
+_session_manager = None
+
+
 class SessionManager:
     def __init__(self, log: Logger, persist_path: str = "sessions.db"):
         self.persist_path = persist_path
@@ -139,3 +142,19 @@ class SessionManager:
         )
         self.conn.commit()
         self.log.info(f"Saved state for session: {session_id} of user: {user_id}")
+
+
+def initialize_session_manager(log: Logger, persist_path: str = "sessions.db") -> SessionManager:
+    """Initialize the global session manager instance."""
+    global _session_manager
+    if _session_manager is None:
+        _session_manager = SessionManager(log=log, persist_path=persist_path)
+    return _session_manager
+
+
+def get_session_manager() -> SessionManager:
+    """Retrieve the global session manager instance."""
+    global _session_manager
+    if _session_manager is None:
+        raise ValueError("SessionManager has not been initialized. Call initialize_session_manager first.")
+    return _session_manager

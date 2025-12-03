@@ -1,30 +1,33 @@
 from utils.wsp_utils import send_wsp_event
-from .board_space import BoardSpace, PropertySpace, ActionSpace
-from .user_state import UserState
-from .state_manager import StateManager
-from .wsp_helpers import state_update
+from models.board_models import BoardSpace, PropertySpace, ActionSpace
+from models.game_state import UserState
+from core.state_manager import StateManager
+from core.wsp_helpers import state_update
 import random
 from models.wsp_schemas import WSPEvent
 from utils.logger import get_logger
+from utils.event_bus import EventBus, get_event_bus
 from typing import Literal
 from websockets.asyncio.server import ServerConnection
-from core.board_manager import BoardManager
+from core.connection_manager import get_user_websocket
+from core.state_manager import get_state_manager
 
 
+state_manager = get_state_manager()
 log = get_logger("game_controller")
+event_bus = get_event_bus()
 
 
 class GameController:
     """Singleton class that manages game logic with session state and board."""
-    def __init__(self, board_manager: BoardManager, state_manager: StateManager):
-        self.board = self._sort_board(board_manager.board_spaces)
-        self.board_map = {space.space_id: space for space in self.board}
-        self.board_manager = board_manager
-        self.state_manager = state_manager
+    def __init__(self) -> None:
+        pass
+        # self.register_event_handlers()
 
     def _sort_board(self, board: list[BoardSpace]) -> list[BoardSpace]:
         """Sort the board spaces based on their space_id."""
         return sorted(board, key=lambda space: space.space_index)
+    
 
     def save_game(self, user_id: str, session_id: str) -> None:
         """Save the current game state for a user."""
