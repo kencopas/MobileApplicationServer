@@ -1,24 +1,67 @@
-from typing import Callable
+from typing import Callable, Type, Dict, List
 from functools import lru_cache
 import inspect
+from pydantic import BaseModel
+from enum import Enum
+from utils.logger import get_logger
+
+
+log = get_logger('event_bus')
+
+
+class Phase(Enum):
+    INPUT = 1
+    RESOLUTION = 2
+    EFFECTS = 3
+    CLEANUP = 4
 
 
 class EventBus:
+
+    handlers: Dict[Type, List[Callable]]
+    queues: Dict[Phase, List[BaseModel]]
+
     def __init__(self):
         self.handlers = {}
+        self.queues = {}
     
-    def subscribe(self, event_type: str, handler: Callable):
+    def on(self, event_type: Type):
+        async def decorator(func):
+            self.subscribe(event_type, func)
+            return func
+        return decorator
+
+    def subscribe(self, event_type: Type, handler: Callable) -> None:
         if event_type not in self.handlers:
             self.handlers[event_type] = []
         self.handlers[event_type].append(handler)
     
-    async def publish(self, event_type: str, *args, **kwargs):
+    async def publish(self, phase: Phase, event: BaseModel) -> None:
+        if phase not in self.queues:
+            self.queues[phase] = []
+        self.queues[phase].append(event)
+    
+    async def run_listeners(self, event: BaseModel) -> None:
+        """Runs all event listeners for a given event type"""
+        event_type = type(event)
+        log.info(f"Running listeners for event type {event_type} with data {event.model_dump_json()}")
         if event_type in self.handlers:
             for handler in self.handlers[event_type]:
-                if inspect.iscoroutinefunction(handler):
-                    await handler(*args, **kwargs)
-                else:
-                    handler(*args, **kwargs)
+                log.info(f"Running handler {handler.__name__}")
+                await handler(event)
+    
+    async def process_phase(self, phase: Phase) -> None:
+        """Runs all events in a specific queue by phase enum"""
+        log.info(f"Processing queued events for phase: {phase}")
+        for event in self.queues[phase]:
+            await self.run_listeners(event)
+    
+    async def process_all_phases(self) -> None:
+        """Runs all events in each of the queues, in order of phase enum"""
+        ordered_phases = sorted(self.queues.keys(), key=lambda phase: phase.value)
+        log.info(f"Processing all phases in this order: {', '.join([phase.name for phase in ordered_phases])}")
+        for phase in ordered_phases:
+            await self.process_phase(phase)
 
 
 @lru_cache(maxsize=1)

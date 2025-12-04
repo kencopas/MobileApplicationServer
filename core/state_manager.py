@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Dict, Any
+from typing import Dict, Any, List
 from core.wsp_helpers import state_update
 from models.game_state import UserState, GameState
 from utils.session_manager import SessionManager
@@ -9,6 +9,8 @@ from utils.event_bus import get_event_bus
 from core.connection_manager import get_user_websocket
 from utils.wsp_utils import send_wsp_event
 from models.wsp_schemas import WSPEvent
+from utils.event_bus import EventBus, Phase
+from models.commands import StateCommand, MovePlayer
 
 
 log = get_logger("state_manager")
@@ -17,13 +19,39 @@ event_bus = get_event_bus()
 
 class StateManager:
     """Singleton class that manages user states and sessions."""
-    def __init__(self):
+    def __init__(self, bus: EventBus):
+        self.bus = bus
         self.game_states: Dict[str, GameState] = {}
         self.user_states: Dict[str, UserState] = {}
+        self.user_games: Dict[str, GameState] = {}
         self.session_manager = SessionManager(
             persist_path=str(SESSION_PERSIST_PATH),
             log=get_logger("session_manager")
         )
+
+    def update_user_state(self, user_id: str, user_state: UserState):
+        self.user_states[user_id] = user_state
+    
+    def update_game_state(self, online_game_id: str, game_state: GameState):
+        self.game_states[online_game_id] = game_state
+        for user_id, user_state in game_state.player_states.items():
+            self.update_user_state(user_id, user_state)
+            self.user_games[user_id] = game_state
+    
+    def apply(self, command: StateCommand):
+        
+        user_id = command.user_id
+        online_game_id = command.online_game_id
+        game_state = self.game_states.get(online_game_id)
+        user_state = self.user_states.get(user_id)
+
+        if isinstance(command, MovePlayer):
+            self.update_user_state(user_id, )
+
+
+    def apply_all(self, commands: List[StateCommand]):
+        for command in commands:
+            self.apply(command)
 
     def add_player(self, online_game_id: str, user_id: str) -> None:
         """Add a player to the game state."""
@@ -67,9 +95,12 @@ class StateManager:
         )
         self.set_state(online_game_id, new_state)
         return new_state
+    
+    def get_player_state(self, user_id: str) -> UserState:
+        return self.user_states.get('user_id')
 
     def get_state(self, online_game_id: str) -> GameState | None:
-        """Retrieve the state for a given user."""
+        """Retrieve the state for a given game."""
 
         cached_state = self.game_states.get(online_game_id)
         

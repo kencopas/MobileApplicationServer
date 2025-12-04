@@ -3,20 +3,80 @@ from utils.logger import get_logger
 from utils.wsp_utils import send_wsp_event, get_missing_fields
 from websockets.asyncio.server import ServerConnection
 from models.wsp_schemas import WSPEvent
-from app import event_handler_registry, game_controller, event_bus
-from core.state_manager import get_state_manager
+from app import event_handler_registry, event_bus
+from models.events import PlayerRollDice, PlayerPositionUpdate
+from utils.event_bus import Phase
+import random
+from state_manager import StateManager
 
 
+state_manager: StateManager = None
+game_controller = None
 log = get_logger("event_handlers")
-state_manager = get_state_manager()
 
 
-@event_handler_registry.event("baseEvent")
-async def base_event_handler(ws: ServerConnection, data: Dict | None) -> WSPEvent:
-    return WSPEvent(
-        event="baseEventAck",
-        data={"message": "This is a response from baseEvent"}
+@event_bus.on(PlayerRollDice)
+async def update_player_position(event: PlayerRollDice):
+    
+    user_state = state_manager.get_player_state(event.user_id)
+    new_position = (user_state.position + event.dice_roll) % 40
+
+    event_bus.publish(
+        Phase.RESOLUTION,
+        PlayerPositionUpdate(
+            user_id=event.user_id,
+            online_game_id=event.online_game_id,
+            old_position=user_state.position,
+            new_position=new_position
+        )
     )
+
+
+@event_handler_registry.event("monopolyMove")
+async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEvent | None:
+    """Handle a Monopoly game move event."""
+
+    user_id = data.get("userId")
+    online_game_id = data.get("onlineGameId")
+
+    await event_bus.publish(
+        Phase.INPUT,
+        PlayerRollDice(
+            online_game_id=online_game_id,
+            user_id=user_id,
+            dice_roll=(random.randint(1, 6) + random.randint(1, 6))
+        )
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @event_handler_registry.event("saveSession")
@@ -34,35 +94,6 @@ async def save_session_handler(ws: ServerConnection, data: Dict | None) -> WSPEv
         event="saveSessionAck",
         data={"status": "success"}
     )
-
-
-@event_handler_registry.event("monopolyMove")
-async def handle_monopoly_move(ws: ServerConnection, data: Dict | None) -> WSPEvent | None:
-    """Handle a Monopoly game move event."""
-
-    user_id = data.get("userId")
-    online_game_id = data.get("onlineGameId")
-
-    await event_bus.publish("monopolyMove", user_id=user_id, online_game_id=online_game_id)
-
-    # user_state = game_controller.state_manager.get_state(user_id)
-    # if not user_state:
-    #     log.error(f"User state not found for userId: {user_id}")
-    #     return WSPEvent(
-    #         event="error",
-    #         data={"message": "User state not found", "errorValue": user_id},
-    #         error="stateNotFound"
-    #     )
-    
-    # try:
-    #     await game_controller.monopoly_move(ws, user_id, session_id)
-    # except Exception as e:
-    #     log.error(f"Error during handle_monopoly_move for userId {user_id}: {e}")
-    #     return WSPEvent(
-    #         event="error",
-    #         data={"message": "Error processing move", "errorValue": str(e)},
-    #         error="moveError"
-    #     )
 
 
 @event_handler_registry.event("buyProperty")
