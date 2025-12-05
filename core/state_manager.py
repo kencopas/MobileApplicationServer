@@ -34,9 +34,6 @@ class StateManager:
     
     def update_game_state(self, online_game_id: str, game_state: GameState):
         self.game_states[online_game_id] = game_state
-        for user_id, user_state in game_state.player_states.items():
-            self.update_user_state(user_id, user_state)
-            self.user_games[user_id] = game_state
     
     def apply(self, command: StateCommand):
         

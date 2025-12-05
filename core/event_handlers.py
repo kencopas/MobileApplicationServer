@@ -15,6 +15,11 @@ game_controller = None
 log = get_logger("event_handlers")
 
 
+@event_bus.on(PlayerPositionUpdate)
+async def handle_player_landing(event: PlayerPositionUpdate):
+    pass
+
+
 @event_bus.on(PlayerRollDice)
 async def update_player_position(event: PlayerRollDice):
     

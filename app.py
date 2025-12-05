@@ -11,10 +11,8 @@ event_handler_registry = EventHandlerRegistry(
 )
 
 event_bus = EventBus()
-
 state_manager = StateManager(bus=event_bus)
 
 initialize_board_manager()
 
 game_controller = GameController()
-
