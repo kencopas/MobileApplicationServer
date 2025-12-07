@@ -23,8 +23,8 @@ class PropertySpace(BoardSpace):
     mortgage_value: int
     hotels: int = 0
     rent_prices: List[int] = []
-    owned_by: Optional[str] = None  # user_id of the owner, None if unowned
-
+    owned_by: Optional[str] = None # user_id of the owner, None if unowned
+    """User ID or None"""
 
 class ActionSpace(BoardSpace):
     space_type: Literal["action"] = "action"

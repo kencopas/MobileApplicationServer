@@ -1,14 +1,14 @@
 from utils.wsp_utils import send_wsp_event
 from models.wsp_schemas import WSPEvent
-from models.game_state import UserState
+from models.game_state import GameState
 from websockets.asyncio.server import ServerConnection
 from typing import Dict
 
 
-async def state_update(ws: ServerConnection, state: UserState | Dict) -> None:
+async def state_update(ws: ServerConnection, state: GameState | Dict) -> None:
     """Send a state update event over the websocket connection."""
 
-    state_data = state.to_dict() if isinstance(state, UserState) else state
+    state_data = state.to_dict() if isinstance(state, GameState) else state
 
     await send_wsp_event(ws, WSPEvent(
         event="stateUpdate",
