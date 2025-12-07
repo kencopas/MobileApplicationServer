@@ -28,10 +28,24 @@ async def handle_player_landing(event: PlayerMoved):
         if not landed_space.owned_by:
             # Unowned space
             log.info(f"User landed on unowned property: {landed_space.name}")
-            await send_wsp_event(ws, WSPEvent(
-                event="LandedOnUnownedProperty",
-                data={"space": landed_space.model_dump()}
-            ))
+            if user_state.money_dollars >= landed_space.purchase_price:
+                await send_wsp_event(ws, WSPEvent(
+                    event="showDialog",
+                    data={
+                        "space": landed_space.model_dump(),
+                        "promptType": "askPurchaseProperty",
+                        "message": f"Would you like to purchase this property for ${landed_space.purchase_price}?"
+                    }
+                ))
+            else:
+                await send_wsp_event(ws, WSPEvent(
+                    event="showDialog",
+                    data={
+                        "space": landed_space.model_dump(),
+                        "promptType": "alert",
+                        "message": f"You do not have enough money to purchase this property."
+                    }
+                ))
             return
 
         if landed_space.owned_by == user_state.user_id:

@@ -3,6 +3,7 @@ from utils.logger import get_logger
 from websockets.asyncio.server import ServerConnection
 from app import event_handler_registry
 import core.event_handlers  # Ensure event handlers are registered
+import core.event_bus_listeners
 from core.websocket_service import get_websocket_service
 from utils.wsp_utils import validate_wsp, send_wsp_event
 

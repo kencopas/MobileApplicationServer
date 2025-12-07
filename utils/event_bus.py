@@ -52,9 +52,10 @@ class EventBus:
         self.Phase = Phase if Phase else DefaultPhase
     
     def on(self, event_type: Type):
-        def decorator(func):
+        def decorator(func: Callable):
             if not iscoroutinefunction(func):
                 raise ValueError("Attempted to subscribe synchronous function to EventBus use EventBus.on decorator. Event listeners must be asynchronous.")
+            log.info(f"Subscribing handler {func.__name__} to event {event_type.__name__}")
             self.subscribe(event_type, func)
             return func
         return decorator
@@ -105,6 +106,8 @@ class EventBus:
         for event in self.queues[phase]:
             event_commands = await self.run_listeners(event)
             phase_commands.extend(event_commands if event_commands else [])
+        
+        self.queues[phase] = []
         
         if not phase_commands:
             log.info(f'Phase {phase.name} returned no commands. Continuing...')

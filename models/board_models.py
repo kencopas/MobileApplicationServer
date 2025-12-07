@@ -1,4 +1,4 @@
-from typing import Optional, Literal, List, Literal
+from typing import Optional, Literal, List, Literal, Set
 from pydantic import BaseModel, PrivateAttr, Field
 
 
@@ -6,7 +6,7 @@ class VisualProperties(BaseModel):
     color: Optional[str] = None
     icon: Optional[str] = None
     description: Optional[str] = None
-    occupied_by: Optional[str] = None
+    occupied_by: Optional[List[str]] = Field(default_factory=list)
 
 
 class BoardSpace(BaseModel):

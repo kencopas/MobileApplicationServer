@@ -26,8 +26,11 @@ class StateManager:
         )
 
     def initialize_session(self, user_id: str, game_id: str) -> None:
-        user_state = self.get_player_state(user_id)
-        game_state = self.create_state(game_id)
+        game_state = self.get_state(game_id)
+        if not game_state:
+            game_state = self.create_state(game_id)
+        if user_id not in game_state.player_states:
+            self.initialize_state({"user_id": user_id, "money_dollars": 1500, "current_space_id": "go"})
         self.add_player(game_id=game_id, user_id=user_id)
 
     def update_user_state(self, user_id: str, user_state: UserState):
@@ -38,6 +41,7 @@ class StateManager:
     
     def apply(self, command: StateCommand):
         
+        log.info(f"Applying command {type(command).__name__}")
         user_id = command.user_id
         game_id = command.game_id
         game_state = self.game_states.get(game_id)
@@ -47,7 +51,12 @@ class StateManager:
             new_space = game_state.game_board[command.new_position]
             user_state.position = command.new_position
             user_state.current_space_id = new_space.space_id
-            game_state.game_board[command.new_position].visual_properties.occupied_by = user_state.user_id
+
+            for board_space in game_state.game_board:
+                while user_state.user_id in board_space.visual_properties.occupied_by:
+                    board_space.visual_properties.occupied_by.remove(user_state.user_id)
+            if user_state.user_id not in new_space.visual_properties.occupied_by:
+                game_state.game_board[command.new_position].visual_properties.occupied_by.append(user_state.user_id)
             self.update_game_state(game_id, game_state)
             self.update_user_state(user_id, user_state)
 

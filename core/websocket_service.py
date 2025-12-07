@@ -22,7 +22,7 @@ class WebsocketService:
     def get_websocket_by_user(self, user_id: str) -> ServerConnection | None:
         return self._websockets_by_user.get(user_id)
 
-    def get_websockets_by_game(self, game_id: str) -> List[ServerConnection] | None:
+    def get_websockets_by_game(self, game_id: str) -> Dict[str, ServerConnection] | None:
         return self._websockets_by_game.get(game_id)
 
 
