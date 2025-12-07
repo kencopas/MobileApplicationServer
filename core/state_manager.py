@@ -47,6 +47,8 @@ class StateManager:
             new_space = game_state.game_board[command.new_position]
             user_state.position = command.new_position
             user_state.current_space_id = new_space.space_id
+            game_state.game_board[command.new_position].visual_properties.occupied_by = user_state.user_id
+            self.update_game_state(game_id, game_state)
             self.update_user_state(user_id, user_state)
 
 
