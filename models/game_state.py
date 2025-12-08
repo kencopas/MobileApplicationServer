@@ -18,14 +18,6 @@ class GameState(BaseModel):
     game_id: str
     player_states: Dict[str, UserState]  # Maps user_id to UserState
     game_board: List[BoardSpace]
-
-    def get_player_state(self, user_id: str) -> UserState | None:
-        """Retrieve the UserState for a given user_id."""
-        return self.player_states.get(user_id)
-
-    def update_player_state(self, user_id: str, new_state: UserState) -> None:
-        """Update the UserState for a given user_id."""
-        self.player_states[user_id] = new_state
     
     def to_dict(self) -> Dict:
         return self.model_dump()

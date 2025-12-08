@@ -31,10 +31,19 @@ async def event_router(websocket: ServerConnection) -> None:
 
             user_id = event.data.get('userId')
             game_id = event.data.get('onlineGameId')
-            websocket_service.register_websocket(ws=websocket, user_id=user_id, game_id=game_id)
+            websocket_service.register_websocket(
+                ws=websocket,
+                user_id=user_id,
+                game_id=game_id
+            )
 
             log.info(f"Received:\n\n{event.model_dump_json(indent=4)}")
-            response_event = await event_handler_registry.handle_event(websocket, event)
+            response_event = await event_handler_registry.handle_event(
+                ws=websocket,
+                user_id=user_id,
+                game_id=game_id,
+                event=event
+            )
 
             if not response_event:
                 log.info(f"No response event generated for incoming event: {event.event}")

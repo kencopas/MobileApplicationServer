@@ -100,9 +100,14 @@ class EventHandlerRegistry:
             raise ValueError(f"A handler has already been registered for the event type {event_type}.")
 
         def decorator(event_handler: EventHandler) -> EventHandler:
-            async def wrapper(ws: ServerConnection, event_data: Dict | None) -> WSPEvent:
+            async def wrapper(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent:
                 self.log.info(f"Executing event handler {event_handler.__name__} for event {event_type}")
-                result = await event_handler(ws, event_data)
+                result = await event_handler(
+                    ws=ws,
+                    game_id=game_id,
+                    user_id=user_id,
+                    data=data
+                )
                 self.log.info("Successfully executed event!")
                 return result
             
@@ -111,7 +116,7 @@ class EventHandlerRegistry:
             return wrapper
         return decorator
 
-    async def handle_event(self, ws: ServerConnection, event: WSPEvent) -> WSPEvent | None:
+    async def handle_event(self, ws: ServerConnection, user_id: str, game_id: str, event: WSPEvent) -> WSPEvent | None:
         event_handler = self.get_handler(event.event)
         if not event_handler:
             self.log.error(f"No handler found for event: {event.event}")
@@ -120,4 +125,9 @@ class EventHandlerRegistry:
                 data={"message": f"No handler found for event: {event.event}", "errorValue": event.event},
                 error="invalidEvent"
             )
-        return await event_handler(ws, event.data)
+        return await event_handler(
+            ws=ws,
+            user_id=user_id,
+            game_id=game_id,
+            data=event.data
+        )

@@ -1,11 +1,11 @@
 from functools import lru_cache
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from copy import deepcopy
 
 from config.config import SESSION_PERSIST_PATH, template_game_board
 
 from models.game_state import UserState, GameState
-from models.commands import StateCommand, MovePlayer
+from models.commands import StateCommand, MovePlayer, BuyProperty, ModifyFunds
 
 from utils.session_manager import SessionManager
 from utils.logger import get_logger
@@ -26,22 +26,38 @@ class StateManager:
         )
 
     def initialize_session(self, user_id: str, game_id: str) -> None:
-        game_state = self.get_state(game_id)
+        game_state = self.get_game_state(game_id)
         if not game_state:
             game_state = self.create_state(game_id)
         if user_id not in game_state.player_states:
-            self.initialize_state({"user_id": user_id, "money_dollars": 1500, "current_space_id": "go"})
+            self.initialize_state({"game_id": game_id, "user_id": user_id, "money_dollars": 1500, "current_space_id": "go"})
         self.add_player(game_id=game_id, user_id=user_id)
 
-    def update_user_state(self, user_id: str, user_state: UserState):
-        self.user_states[user_id] = user_state
-    
-    def update_game_state(self, game_id: str, game_state: GameState):
-        self.game_states[game_id] = game_state
-    
-    def apply(self, command: StateCommand):
+    # update_states(game_id, game_state)
+    # update_states(game_id, user_id, user_state)
+    # update_states(game_id, user_id, user_state, game_state)
+    def update_states(
+        self,
+        game_id: str,
+        user_id: Optional[str] = None,
+        game_state: Optional[GameState] = None,
+        user_state: Optional[UserState] = None
+    ) -> None:
         
+        if not game_id or (user_state and not user_id):
+            raise ValueError("Missing game id, or user state is included without user id.")
+
+        if user_id and user_state:
+            self.user_states[user_id] = user_state
+        
+        if game_state:
+            if user_id and user_state:
+                game_state.player_states[user_id] = user_state
+            self.game_states[game_id] = game_state
+            
+    def apply(self, command: StateCommand):
         log.info(f"Applying command {type(command).__name__}")
+
         user_id = command.user_id
         game_id = command.game_id
         game_state = self.game_states.get(game_id)
@@ -49,17 +65,30 @@ class StateManager:
 
         if isinstance(command, MovePlayer):
             new_space = game_state.game_board[command.new_position]
+
             user_state.position = command.new_position
             user_state.current_space_id = new_space.space_id
 
             for board_space in game_state.game_board:
-                while user_state.user_id in board_space.visual_properties.occupied_by:
-                    board_space.visual_properties.occupied_by.remove(user_state.user_id)
-            if user_state.user_id not in new_space.visual_properties.occupied_by:
-                game_state.game_board[command.new_position].visual_properties.occupied_by.append(user_state.user_id)
-            self.update_game_state(game_id, game_state)
-            self.update_user_state(user_id, user_state)
+                board_space.remove_occupant(user_id)
 
+            new_space.add_occupant(user_state.user_id)
+
+        elif isinstance(command, BuyProperty):
+            user_state.money_dollars -= command.space.purchase_price
+            user_state.owned_properties.append(command.space.space_id)
+            
+            game_state.game_board[command.space.space_index].owned_by = user_id
+
+        elif isinstance(command, ModifyFunds):
+            user_state.money_dollars += command.money_dollars
+
+        self.update_states(
+            game_id=command.game_id,
+            user_id=command.user_id,
+            game_state=game_state,
+            user_state=user_state
+        )
 
     def apply_all(self, commands: List[StateCommand]):
         for command in commands:
@@ -68,7 +97,7 @@ class StateManager:
     def add_player(self, game_id: str, user_id: str) -> None:
         """Add a player to the game state."""
         log.info(f"Adding player {user_id} to game {game_id}")
-        state = self.get_state(game_id)
+        state = self.get_game_state(game_id)
         if state:
             if user_id not in state.player_states:
                 state.player_states[user_id] = UserState(
@@ -88,11 +117,12 @@ class StateManager:
         log.info("Initializing state...")
         try:
             user_id = initial_state.get("user_id") or initial_state.get("userId")
-            if not user_id:
-                raise ValueError("Initial state must contain 'user_id' key.")
+            game_id = initial_state.get("game_id") or initial_state.get('gameId')
+            if not user_id or not game_id:
+                raise ValueError("Initial state must contain 'user_id' and 'game_id'.")
             
             state_object = UserState(**initial_state)
-            self.update_user_state(user_id, state_object)
+            self.update_states(game_id=game_id, user_id=user_id, user_state=state_object)
         except TypeError as e:
             # Handle the case where initial_state has unexpected keys
             raise ValueError(f"Invalid initial state data: {e}")
@@ -108,10 +138,10 @@ class StateManager:
         self.set_state(game_id, new_state)
         return new_state
     
-    def get_player_state(self, user_id: str) -> UserState | None:
+    def get_user_state(self, user_id: str) -> UserState | None:
         return self.user_states.get(user_id)
 
-    def get_state(self, game_id: str) -> GameState | None:
+    def get_game_state(self, game_id: str) -> GameState | None:
         """Retrieve the state for a given game."""
 
         cached_state = self.game_states.get(game_id)

@@ -16,6 +16,14 @@ class BoardSpace(BaseModel):
     space_index: int
     visual_properties: VisualProperties = Field(default_factory=VisualProperties)
 
+    def add_occupant(self, user_id: str) -> None:
+        if user_id not in self.visual_properties.occupied_by:
+            self.visual_properties.occupied_by.append(user_id)
+    
+    def remove_occupant(self, user_id: str) -> None:
+        while user_id in self.visual_properties.occupied_by:
+            self.visual_properties.occupied_by.remove(user_id)
+
 
 class PropertySpace(BoardSpace):
     space_type: Literal["property"] = "property"
@@ -25,6 +33,7 @@ class PropertySpace(BoardSpace):
     rent_prices: List[int] = []
     owned_by: Optional[str] = None # user_id of the owner, None if unowned
     """User ID or None"""
+
 
 class ActionSpace(BoardSpace):
     space_type: Literal["action"] = "action"

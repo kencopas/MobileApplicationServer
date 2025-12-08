@@ -35,3 +35,7 @@ class LandedOnSelfOwnedSpace(GameEvent):
 class LandedOnOpponentSpace(GameEvent):
     user_position: int
     space: PropertySpace
+
+
+class PurchasedProperty(GameEvent):
+    space: PropertySpace
