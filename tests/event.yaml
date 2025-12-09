@@ -1,0 +1,5 @@
+event: showDialog
+data:
+  promptType: payRent
+  message: This is my custom message yo!
+  rentAmount: 99024892

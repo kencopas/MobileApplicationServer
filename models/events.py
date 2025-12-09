@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel
-from models.board_models import PropertySpace
+from models.board_models import PropertySpace, BoardSpace
 
 
 class GameEvent(BaseModel):
@@ -20,6 +20,7 @@ class PlayerRollDice(GameEvent):
 class PlayerMoved(GameEvent):
     old_position: int
     new_position: int
+    space: BoardSpace
 
 
 class LandedOnUnownedSpace(GameEvent):
@@ -39,3 +40,8 @@ class LandedOnOpponentSpace(GameEvent):
 
 class PurchasedProperty(GameEvent):
     space: PropertySpace
+
+
+class PayedRent(GameEvent):
+    opponent_id: str
+    rent_dollars: int

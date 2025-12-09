@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel
 from models.events import PlayerMoved, GameEvent
-from models.board_models import PropertySpace
+from models.board_models import PropertySpace, BoardSpace
 
 
 class StateCommand(BaseModel):
@@ -15,6 +15,7 @@ class StateCommand(BaseModel):
 class MovePlayer(StateCommand):
     old_position: int
     new_position: int
+    space: BoardSpace
 
     def to_event(self) -> PlayerMoved:
         return PlayerMoved(**self.__dict__)

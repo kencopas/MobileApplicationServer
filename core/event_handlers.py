@@ -9,7 +9,7 @@ from core.websocket_service import get_websocket_service
 from core.wsp_helpers import state_update, send_wsp_event
 
 from models.wsp_schemas import WSPEvent
-from models.events import PlayerRollDice, SessionInit, PurchasedProperty
+from models.events import PlayerRollDice, SessionInit, PurchasedProperty, PayedRent
 from models.board_models import PropertySpace
 
 from utils.logger import get_logger
@@ -26,6 +26,33 @@ async def process_and_update(game_id: str):
     await event_bus.process_all_phases()
     game_state = state_manager.get_game_state(game_id)
     await state_update(game_state)
+
+
+@event_handler_registry.event("payRentConfirmation")
+async def handle_pay_rent(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
+
+    user_state = state_manager.get_user_state(user_id)
+    game_state = state_manager.get_game_state(game_id)
+
+    space = game_state.game_board[user_state.position]
+
+    if not isinstance(space, PropertySpace):
+        raise ValueError("Attempted to pay rent on a non-property space.")
+
+    opponent_id = space.owned_by
+    rent = 100
+
+    await event_bus.publish(
+        DefaultPhase.INPUT,
+        PayedRent(
+            game_id=game_id,
+            user_id=user_id,
+            opponent_id=opponent_id,
+            rent_dollars=rent
+        )
+    )
+
+    await process_and_update(game_id)
 
 
 @event_handler_registry.event("buyProperty")
