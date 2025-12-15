@@ -4,7 +4,7 @@ from core.wsp_helpers import ShowDialog
 
 from models.wsp_schemas import WSPEvent
 from models.events import PlayerMoved, PlayerRollDice, PurchasedProperty, PayedRent
-from models.commands import MovePlayer, BuyProperty, ModifyFunds
+from models.commands import MovePlayer, BuyProperty, ModifyFunds, EndTurn
 from models.board_models import PropertySpace, ActionSpace
 
 from utils.event_bus import get_event_bus
@@ -30,18 +30,21 @@ async def handle_payed_rent(event: PayedRent):
             game_id=event.game_id,
             user_id=event.opponent_id,
             money_dollars=event.rent_dollars
-        )
+        ),
+        EndTurn(**event.ids)
     ]
 
 
 @event_bus.on(PurchasedProperty)
 async def handle_buy_property(event: PurchasedProperty):
     # Logic for buying a property
-    return BuyProperty(
-        game_id=event.game_id,
-        user_id=event.user_id,
-        space=event.space
-    )
+    return [
+        BuyProperty(
+            **event.ids,
+            space=event.space
+        ),
+        EndTurn(**event.ids)
+    ]
 
 
 @event_bus.on(PlayerMoved)
@@ -79,7 +82,7 @@ async def handle_property_landing(event: PlayerMoved):
                 message=f"You do not have enough money to purchase this property.",
                 space=landed_space
             )
-        return\
+        return
 
     if landed_space.owned_by == user_state.user_id:
         # Self-owned space
@@ -88,7 +91,7 @@ async def handle_property_landing(event: PlayerMoved):
             message=f"You already own this property.",
             space=landed_space
         )
-        return
+        return EndTurn(game_id=event.game_id, user_id=event.user_id)
     
     rent = 100  # Hard-coded value
 
@@ -120,6 +123,8 @@ async def handle_action_landing(event: PlayerMoved):
             "message": f"You must perform {landed_space.action}"
         }
     ))
+
+    return EndTurn(**event.ids)
 
 
 @event_bus.on(PlayerRollDice)

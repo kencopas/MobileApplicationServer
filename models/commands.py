@@ -12,6 +12,10 @@ class StateCommand(BaseModel):
         ...
 
 
+class EndTurn(StateCommand):
+    ...
+
+
 class MovePlayer(StateCommand):
     old_position: int
     new_position: int

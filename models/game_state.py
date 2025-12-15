@@ -18,6 +18,8 @@ class GameState(BaseModel):
     game_id: str
     player_states: Dict[str, UserState]  # Maps user_id to UserState
     game_board: List[BoardSpace]
+    current_turn: int = 0 # Player list index of the player whose turn it is
+    current_turn_uid: str = ''
     
     def to_dict(self) -> Dict:
         return self.model_dump()

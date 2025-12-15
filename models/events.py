@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, Optional
 from pydantic import BaseModel
 from models.board_models import PropertySpace, BoardSpace
 
@@ -6,6 +6,13 @@ from models.board_models import PropertySpace, BoardSpace
 class GameEvent(BaseModel):
     game_id: str
     user_id: Optional[str]
+
+    @property
+    def ids(self) -> Dict:
+        return {
+            'game_id': self.game_id,
+            'user_id': self.user_id
+        }
 
 
 class SessionInit(GameEvent):

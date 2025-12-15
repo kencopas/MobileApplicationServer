@@ -61,10 +61,15 @@ async def state_update(state: GameState | Dict) -> None:
     state_data = state.to_dict() if isinstance(state, GameState) else state
     websockets = websocket_service.get_websockets_by_game(game_id=state.game_id)
 
-    for ws in websockets.values():
-        await send_wsp_event(ws, WSPEvent(
-            event="stateUpdate",
-            data={
-                "state": state_data
-            }
-        ))
+    try:
+        for ws in websockets.values():
+            print("Sending state update...")
+            await send_wsp_event(ws, WSPEvent(
+                event="stateUpdate",
+                data={
+                    "state": state_data
+                }
+            ))
+            print("State update sent!")
+    except Exception as e:
+        print(f"Error broadcasting websocket message: {e}")

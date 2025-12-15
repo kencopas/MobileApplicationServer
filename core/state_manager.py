@@ -5,7 +5,7 @@ from copy import deepcopy
 from config.config import SESSION_PERSIST_PATH, template_game_board
 
 from models.game_state import UserState, GameState
-from models.commands import StateCommand, MovePlayer, BuyProperty, ModifyFunds
+from models.commands import StateCommand, MovePlayer, BuyProperty, ModifyFunds, EndTurn
 
 from utils.session_manager import SessionManager
 from utils.logger import get_logger
@@ -82,6 +82,13 @@ class StateManager:
 
         elif isinstance(command, ModifyFunds):
             user_state.money_dollars += command.money_dollars
+        
+        elif isinstance(command, EndTurn):
+            player_list = sorted([uid for uid in game_state.player_states.keys()])
+            player_count = len(player_list)
+            log.info(f"Update current turn for {player_count} players from {game_state.current_turn} to {(game_state.current_turn + 1) % player_count}")
+            game_state.current_turn = (game_state.current_turn + 1) % player_count
+            game_state.current_turn_uid = player_list[game_state.current_turn]
 
         self.update_states(
             game_id=command.game_id,
@@ -107,6 +114,7 @@ class StateManager:
                     current_space_id='go',
                     owned_properties=[]
                 )
+                state.current_turn_uid = user_id
         else:
             raise ValueError(f"Game state for game_id {game_id} does not exist.")
         
