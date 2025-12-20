@@ -33,9 +33,6 @@ class StateManager:
             self.initialize_state({"game_id": game_id, "user_id": user_id, "money_dollars": 1500, "current_space_id": "go"})
         self.add_player(game_id=game_id, user_id=user_id)
 
-    # update_states(game_id, game_state)
-    # update_states(game_id, user_id, user_state)
-    # update_states(game_id, user_id, user_state, game_state)
     def update_states(
         self,
         game_id: str,
@@ -115,6 +112,19 @@ class StateManager:
                     owned_properties=[]
                 )
                 state.current_turn_uid = user_id
+        else:
+            raise ValueError(f"Game state for game_id {game_id} does not exist.")
+        
+        self.set_state(game_id, state)
+    
+    def remove_player(self, game_id: str, user_id: str) -> None:
+        """Remove a player from the game state."""
+        log.info(f"Removing player {user_id} from game {game_id}")
+        state = self.get_game_state(game_id)
+        if state:
+            if user_id in state.player_states:
+                del state.player_states[user_id]
+                state.current_turn_uid = list(state.player_states.keys())[0] if state.player_states else ""
         else:
             raise ValueError(f"Game state for game_id {game_id} does not exist.")
         

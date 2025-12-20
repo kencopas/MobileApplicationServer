@@ -6,6 +6,7 @@ import core.event_handlers  # Ensure event handlers are registered
 import core.event_bus_listeners
 from core.websocket_service import get_websocket_service
 from utils.wsp_utils import validate_wsp, send_wsp_event
+from models.wsp_schemas import WSPEvent
 
 
 # Track all connected clients
@@ -52,7 +53,13 @@ async def event_router(websocket: ServerConnection) -> None:
             await send_wsp_event(websocket, response_event)
 
     except websockets.ConnectionClosed:
-        log.info("Client disconnected")
+        log.info("Client disconnected, broadcasting disconnect...")
+        await event_handler_registry.handle_event(
+            ws=None,
+            user_id=None,
+            game_id=None,
+            event=WSPEvent(event="connectionClosed")
+        )
 
     finally:
         # Always remove on disconnect

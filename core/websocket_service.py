@@ -1,5 +1,6 @@
 from websockets.asyncio.server import ServerConnection
-from typing import List, Dict
+from websockets.protocol import State
+from typing import List, Dict, Set
 from functools import lru_cache
 
 
@@ -24,6 +25,18 @@ class WebsocketService:
 
     def get_websockets_by_game(self, game_id: str) -> Dict[str, ServerConnection] | None:
         return self._websockets_by_game.get(game_id)
+    
+    def get_closed_websockets(self) -> Dict[str, Set]:
+        """Returns the game and user ids for each user that has disconnected"""
+        output = {}
+        for game_id, user_ws in self._websockets_by_game.items():
+            disconnected_user_ids = {
+                user_id for user_id, ws in user_ws.items()
+                if ws.state is State.CLOSED
+            }
+            if disconnected_user_ids:
+                output[game_id] = disconnected_user_ids
+        return output
 
 
 @lru_cache(maxsize=1)

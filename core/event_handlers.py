@@ -28,6 +28,16 @@ async def process_and_update(game_id: str):
     await state_update(game_state)
 
 
+@event_handler_registry.event("connectionClosed")
+async def handle_connection_closed(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> None:
+    disconnected_users = websocket_service.get_closed_websockets()
+    for gid, uids in disconnected_users.items():
+        for uid in uids:
+            state_manager.remove_player(game_id=gid, user_id=uid)
+        game_state = state_manager.get_game_state(game_id=gid)
+        await state_update(game_state)
+
+
 @event_handler_registry.event("payRentConfirmation")
 async def handle_pay_rent(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
 
