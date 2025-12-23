@@ -1,7 +1,8 @@
-from typing import Callable, Type, Dict, List, Optional, Protocol, Any, Awaitable
+from typing import Callable, Type, Dict, List, Optional, Protocol, TypeAlias, Awaitable
 from functools import lru_cache
 import inspect
 from pydantic import BaseModel
+import pydantic
 from enum import Enum
 from utils.logger import get_logger
 from inspect import iscoroutinefunction
@@ -11,14 +12,14 @@ log = get_logger('event_bus')
 _event_bus = None
 
 
+Event: TypeAlias = BaseModel
+
+
 class DefaultPhase(Enum):
     INPUT = 1
     RESOLUTION = 2
     EFFECTS = 3
     CLEANUP = 4
-
-
-Event = BaseModel
 
 
 class Command(Protocol):
@@ -27,13 +28,13 @@ class Command(Protocol):
         ...
 
 
-Handler = Callable[[Event], Awaitable[Command | List[Command]]]
-
-
 class StateMngr(Protocol):
     def apply(self, cmd: Command) -> None:
         """Applies the necessary state changes for a given Command"""
         ...
+
+
+Handler: TypeAlias = Callable[[Event], Awaitable[Optional[Command | List[Command]]]]
 
 
 class EventBus:

@@ -105,8 +105,6 @@ async def handle_online_game(ws: ServerConnection, game_id: str, user_id: str, d
 async def handle_monopoly_move(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
     """Handle a Monopoly game move event."""
 
-    game_state = state_manager.get_game_state(game_id=game_id)
-
     await event_bus.publish(
         DefaultPhase.INPUT,
         PlayerRollDice(
