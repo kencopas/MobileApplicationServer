@@ -48,7 +48,7 @@ async def handle_buy_property(event: PurchasedProperty):
 
 
 @event_bus.on(PlayerMoved)
-async def check_if_passed_go(event: PlayerMoved):
+async def check_if_passed_boot(event: PlayerMoved):
     if event.old_position >= event.new_position:
         return ModifyFunds(
             user_id=event.user_id,

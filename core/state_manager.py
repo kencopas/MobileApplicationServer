@@ -30,7 +30,7 @@ class StateManager:
         if not game_state:
             game_state = self.create_state(game_id)
         if user_id not in game_state.player_states:
-            self.initialize_state({"game_id": game_id, "user_id": user_id, "money_dollars": 1500, "current_space_id": "go"})
+            self.initialize_state({"game_id": game_id, "user_id": user_id, "money_dollars": 1500, "current_space_id": "boot_sequence"})
         self.add_player(game_id=game_id, user_id=user_id)
 
     def update_states(
@@ -108,7 +108,7 @@ class StateManager:
                     user_id=user_id,
                     money_dollars=1500,
                     position=0,
-                    current_space_id='go',
+                    current_space_id='boot_sequence',
                     owned_properties=[]
                 )
                 state.current_turn_uid = user_id

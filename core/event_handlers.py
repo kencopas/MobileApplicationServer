@@ -94,7 +94,7 @@ async def handle_online_game(ws: ServerConnection, game_id: str, user_id: str, d
     state_manager.initialize_session(user_id=user_id, game_id=game_id)
     game_state = state_manager.get_game_state(game_id)
 
-    # Update the board so that the player occupies the go space
+    # Update the board so that the player occupies the Boot Sequence space
     game_state.game_board[0].add_occupant(user_id)
     state_manager.set_state(game_id, game_state)
 
