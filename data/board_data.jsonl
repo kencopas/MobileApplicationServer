@@ -1,40 +1,40 @@
-{"space_id":"go","space_index":0,"name":"Go","action":"no_effect","space_type":"action"}
-{"space_id":"mediterranean_avenue","space_index":1,"name":"Mediterranean Avenue","purchase_price":60,"mortgage_value":30,"space_type":"property","visual_properties":{"color":"brown"}}
-{"space_id":"community_chest_2","space_index":2,"name":"Community Chest","action":"draw_chest","space_type":"action"}
-{"space_id":"baltic_avenue","space_index":3,"name":"Baltic Avenue","purchase_price":60,"mortgage_value":30,"space_type":"property","visual_properties":{"color":"brown"}}
-{"space_id":"income_tax","space_index":4,"name":"Income Tax","action":"tax","space_type":"action"}
-{"space_id":"reading_railroad","space_index":5,"name":"Reading Railroad","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":""}}
-{"space_id":"oriental_avenue","space_index":6,"name":"Oriental Avenue","purchase_price":100,"mortgage_value":50,"space_type":"property","visual_properties":{"color":"light_blue"}}
-{"space_id":"chance_7","space_index":7,"name":"Chance","action":"draw_chance","space_type":"action"}
-{"space_id":"vermont_avenue","space_index":8,"name":"Vermont Avenue","purchase_price":100,"mortgage_value":50,"space_type":"property","visual_properties":{"color":"light_blue"}}
-{"space_id":"connecticut_avenue","space_index":9,"name":"Connecticut Avenue","purchase_price":120,"mortgage_value":60,"space_type":"property","visual_properties":{"color":"light_blue"}}
-{"space_id":"jail_just_visiting","space_index":10,"name":"Jail / Just Visiting","action":"no_effect","space_type":"action"}
-{"space_id":"st_charles_place","space_index":11,"name":"St. Charles Place","purchase_price":140,"mortgage_value":70,"space_type":"property","visual_properties":{"color":"pink"}}
-{"space_id":"electric_company","space_index":12,"name":"Electric Company","purchase_price":150,"mortgage_value":75,"space_type":"property","visual_properties":{"color":""}}
-{"space_id":"states_avenue","space_index":13,"name":"States Avenue","purchase_price":140,"mortgage_value":70,"space_type":"property","visual_properties":{"color":"pink"}}
-{"space_id":"virginia_avenue","space_index":14,"name":"Virginia Avenue","purchase_price":160,"mortgage_value":80,"space_type":"property","visual_properties":{"color":"pink"}}
-{"space_id":"pennsylvania_railroad","space_index":15,"name":"Pennsylvania Railroad","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":""}}
-{"space_id":"st_james_place","space_index":16,"name":"St. James Place","purchase_price":180,"mortgage_value":90,"space_type":"property","visual_properties":{"color":"orange"}}
-{"space_id":"community_chest_17","space_index":17,"name":"Community Chest","action":"draw_chest","space_type":"action"}
-{"space_id":"tennessee_avenue","space_index":18,"name":"Tennessee Avenue","purchase_price":180,"mortgage_value":90,"space_type":"property","visual_properties":{"color":"orange"}}
-{"space_id":"new_york_avenue","space_index":19,"name":"New York Avenue","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":"orange"}}
-{"space_id":"free_parking","space_index":20,"name":"Free Parking","action":"no_effect","space_type":"action"}
-{"space_id":"kentucky_avenue","space_index":21,"name":"Kentucky Avenue","purchase_price":220,"mortgage_value":110,"space_type":"property","visual_properties":{"color":"red"}}
-{"space_id":"chance_22","space_index":22,"name":"Chance","action":"draw_chance","space_type":"action"}
-{"space_id":"indiana_avenue","space_index":23,"name":"Indiana Avenue","purchase_price":220,"mortgage_value":110,"space_type":"property","visual_properties":{"color":"red"}}
-{"space_id":"illinois_avenue","space_index":24,"name":"Illinois Avenue","purchase_price":240,"mortgage_value":120,"space_type":"property","visual_properties":{"color":"red"}}
-{"space_id":"b_and_o_railroad","space_index":25,"name":"B. & O. Railroad","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":""}}
-{"space_id":"atlantic_avenue","space_index":26,"name":"Atlantic Avenue","purchase_price":260,"mortgage_value":130,"space_type":"property","visual_properties":{"color":"yellow"}}
-{"space_id":"ventnor_avenue","space_index":27,"name":"Ventnor Avenue","purchase_price":260,"mortgage_value":130,"space_type":"property","visual_properties":{"color":"yellow"}}
-{"space_id":"water_works","space_index":28,"name":"Water Works","purchase_price":150,"mortgage_value":75,"space_type":"property","visual_properties":{"color":""}}
-{"space_id":"marvin_gardens","space_index":29,"name":"Marvin Gardens","purchase_price":280,"mortgage_value":140,"space_type":"property","visual_properties":{"color":"yellow"}}
-{"space_id":"go_to_jail","space_index":30,"name":"Go To Jail","action":"go_to_jail","space_type":"action"}
-{"space_id":"pacific_avenue","space_index":31,"name":"Pacific Avenue","purchase_price":300,"mortgage_value":150,"space_type":"property","visual_properties":{"color":"green"}}
-{"space_id":"north_carolina_avenue","space_index":32,"name":"North Carolina Avenue","purchase_price":300,"mortgage_value":150,"space_type":"property","visual_properties":{"color":"green"}}
-{"space_id":"community_chest_33","space_index":33,"name":"Community Chest","action":"draw_chest","space_type":"action"}
-{"space_id":"pennsylvania_avenue","space_index":34,"name":"Pennsylvania Avenue","purchase_price":320,"mortgage_value":160,"space_type":"property","visual_properties":{"color":"green"}}
-{"space_id":"short_line_railroad","space_index":35,"name":"Short Line Railroad","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":""}}
-{"space_id":"chance_36","space_index":36,"name":"Chance","action":"draw_chance","space_type":"action"}
-{"space_id":"park_place","space_index":37,"name":"Park Place","purchase_price":350,"mortgage_value":175,"space_type":"property","visual_properties":{"color":"blue"}}
-{"space_id":"luxury_tax","space_index":38,"name":"Luxury Tax","action":"tax","space_type":"action"}
-{"space_id":"boardwalk","space_index":39,"name":"Boardwalk","purchase_price":400,"mortgage_value":200,"space_type":"property","visual_properties":{"color":"blue"}}
+{"space_id":"boot_sequence","space_index":0,"name":"Boot Sequence","action":"no_effect","space_type":"action"}
+{"space_id":"legacy_code_lane","space_index":1,"name":"Legacy Code Lane","purchase_price":60,"mortgage_value":30,"space_type":"property","visual_properties":{"color":"brown"}}
+{"space_id":"company_all_hands_2","space_index":2,"name":"Company All-Hands","action":"draw_chest","space_type":"action"}
+{"space_id":"tech_debt_drive","space_index":3,"name":"Tech Debt Drive","purchase_price":60,"mortgage_value":30,"space_type":"property","visual_properties":{"color":"brown"}}
+{"space_id":"compliance_fee","space_index":4,"name":"Compliance Fee","action":"tax","space_type":"action"}
+{"space_id":"cloud_provider_north","space_index":5,"name":"Cloud Provider North","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":""}}
+{"space_id":"junior_dev_row","space_index":6,"name":"Junior Dev Row","purchase_price":100,"mortgage_value":50,"space_type":"property","visual_properties":{"color":"light_blue"}}
+{"space_id":"unexpected_incident_7","space_index":7,"name":"Unexpected Incident","action":"draw_chance","space_type":"action"}
+{"space_id":"code_review_circle","space_index":8,"name":"Code Review Circle","purchase_price":100,"mortgage_value":50,"space_type":"property","visual_properties":{"color":"light_blue"}}
+{"space_id":"standup_street","space_index":9,"name":"Stand-Up Street","purchase_price":120,"mortgage_value":60,"space_type":"property","visual_properties":{"color":"light_blue"}}
+{"space_id":"incident_response","space_index":10,"name":"Incident Response","action":"no_effect","space_type":"action"}
+{"space_id":"product_market_fit","space_index":11,"name":"Product-Market Fit","purchase_price":140,"mortgage_value":70,"space_type":"property","visual_properties":{"color":"pink"}}
+{"space_id":"power_and_cooling","space_index":12,"name":"Power & Cooling","purchase_price":150,"mortgage_value":75,"space_type":"property","visual_properties":{"color":""}}
+{"space_id":"internal_tools_avenue","space_index":13,"name":"Internal Tools Avenue","purchase_price":140,"mortgage_value":70,"space_type":"property","visual_properties":{"color":"pink"}}
+{"space_id":"growth_metrics_lane","space_index":14,"name":"Growth Metrics Lane","purchase_price":160,"mortgage_value":80,"space_type":"property","visual_properties":{"color":"pink"}}
+{"space_id":"cloud_provider_east","space_index":15,"name":"Cloud Provider East","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":""}}
+{"space_id":"scaling_challenges","space_index":16,"name":"Scaling Challenges","purchase_price":180,"mortgage_value":90,"space_type":"property","visual_properties":{"color":"orange"}}
+{"space_id":"company_all_hands_17","space_index":17,"name":"Company All-Hands","action":"draw_chest","space_type":"action"}
+{"space_id":"customer_churn_way","space_index":18,"name":"Customer Churn Way","purchase_price":180,"mortgage_value":90,"space_type":"property","visual_properties":{"color":"orange"}}
+{"space_id":"enterprise_sales_avenue","space_index":19,"name":"Enterprise Sales Avenue","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":"orange"}}
+{"space_id":"open_source_contrib","space_index":20,"name":"Open-Source Contribution","action":"no_effect","space_type":"action"}
+{"space_id":"venture_capital_row","space_index":21,"name":"Venture Capital Row","purchase_price":220,"mortgage_value":110,"space_type":"property","visual_properties":{"color":"red"}}
+{"space_id":"unexpected_incident_22","space_index":22,"name":"Unexpected Incident","action":"draw_chance","space_type":"action"}
+{"space_id":"burn_rate_boulevard","space_index":23,"name":"Burn Rate Boulevard","purchase_price":220,"mortgage_value":110,"space_type":"property","visual_properties":{"color":"red"}}
+{"space_id":"market_dominance_drive","space_index":24,"name":"Market Dominance Drive","purchase_price":240,"mortgage_value":120,"space_type":"property","visual_properties":{"color":"red"}}
+{"space_id":"cloud_provider_west","space_index":25,"name":"Cloud Provider West","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":""}}
+{"space_id":"feature_creep_court","space_index":26,"name":"Feature Creep Court","purchase_price":260,"mortgage_value":130,"space_type":"property","visual_properties":{"color":"yellow"}}
+{"space_id":"platform_lockin_lane","space_index":27,"name":"Platform Lock-In Lane","purchase_price":260,"mortgage_value":130,"space_type":"property","visual_properties":{"color":"yellow"}}
+{"space_id":"data_pipeline","space_index":28,"name":"Data Pipeline","purchase_price":150,"mortgage_value":75,"space_type":"property","visual_properties":{"color":""}}
+{"space_id":"design_system_district","space_index":29,"name":"Design System District","purchase_price":280,"mortgage_value":140,"space_type":"property","visual_properties":{"color":"yellow"}}
+{"space_id":"on_call_rotation","space_index":30,"name":"On-Call Rotation","action":"go_to_jail","space_type":"action"}
+{"space_id":"cloud_native_way","space_index":31,"name":"Cloud-Native Way","purchase_price":300,"mortgage_value":150,"space_type":"property","visual_properties":{"color":"green"}}
+{"space_id":"global_scale_highway","space_index":32,"name":"Global Scale Highway","purchase_price":300,"mortgage_value":150,"space_type":"property","visual_properties":{"color":"green"}}
+{"space_id":"company_all_hands_33","space_index":33,"name":"Company All-Hands","action":"draw_chest","space_type":"action"}
+{"space_id":"platform_moat_avenue","space_index":34,"name":"Platform Moat Avenue","purchase_price":320,"mortgage_value":160,"space_type":"property","visual_properties":{"color":"green"}}
+{"space_id":"deployment_pipeline","space_index":35,"name":"Deployment Pipeline","purchase_price":200,"mortgage_value":100,"space_type":"property","visual_properties":{"color":""}}
+{"space_id":"unexpected_incident_36","space_index":36,"name":"Unexpected Incident","action":"draw_chance","space_type":"action"}
+{"space_id":"industry_standard_place","space_index":37,"name":"Industry Standard Place","purchase_price":350,"mortgage_value":175,"space_type":"property","visual_properties":{"color":"blue"}}
+{"space_id":"enterprise_license_fee","space_index":38,"name":"Enterprise License Fee","action":"tax","space_type":"action"}
+{"space_id":"market_leader_boardwalk","space_index":39,"name":"Market Leader Boardwalk","purchase_price":400,"mortgage_value":200,"space_type":"property","visual_properties":{"color":"blue"}}
