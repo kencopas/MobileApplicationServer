@@ -136,7 +136,7 @@ async def update_player_position(event: PlayerRollDice):
     if not user_state:
         raise ValueError(f"Unable to update player position for user state which does not exist. User ID: {event.user_id}")
 
-    new_position = (user_state.position + event.dice_roll) % 40
+    new_position = (user_state.position + event.dice_roll) % 32
     new_space = game_state.game_board[new_position]
 
     return MovePlayer(

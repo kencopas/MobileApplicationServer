@@ -2,12 +2,12 @@ from logging import Logger
 from typing import Any, Callable, Optional, Dict, Awaitable
 import json
 
-from websockets import ServerConnection
+from websockets import WebSocket
 from models.wsp_schemas import WSPEvent
 import pydantic
 
 
-EventHandler = Callable[[ServerConnection, Dict | None], Awaitable[WSPEvent]]
+EventHandler = Callable[[WebSocket, Dict | None], Awaitable[WSPEvent]]
 
 
 def get_missing_fields(data: Dict | None, required_fields: list[str]) -> list[str]:
@@ -49,11 +49,11 @@ def validate_wsp(event_data: str, required_fields: list[str] | None = None) -> W
         raise ValueError(f"Event data validation error: {e}")
 
 
-async def send_wsp_event(ws: ServerConnection, event: WSPEvent) -> None:
+async def send_wsp_event(ws: WebSocket, event: WSPEvent) -> None:
     """Send a WSPEvent over a WebSocket connection.
     
     Args:
-        ws (ServerConnection): The WebSocket connection to send the event through.
+        ws (WebSocket): The WebSocket connection to send the event through.
         event (WSPEvent): The WSPEvent object to send.
     """
     if not validate_wsp(event.model_dump_json()):
@@ -100,7 +100,7 @@ class EventHandlerRegistry:
             raise ValueError(f"A handler has already been registered for the event type {event_type}.")
 
         def decorator(event_handler: EventHandler) -> EventHandler:
-            async def wrapper(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent:
+            async def wrapper(ws: WebSocket, game_id: str, user_id: str, data: Dict | None) -> WSPEvent:
                 self.log.info(f"Executing event handler {event_handler.__name__} for event {event_type}")
                 result = await event_handler(
                     ws=ws,
@@ -116,7 +116,7 @@ class EventHandlerRegistry:
             return wrapper
         return decorator
 
-    async def handle_event(self, ws: ServerConnection, user_id: str, game_id: str, event: WSPEvent) -> WSPEvent | None:
+    async def handle_event(self, ws: WebSocket, user_id: str, game_id: str, event: WSPEvent) -> WSPEvent | None:
         event_handler = self.get_handler(event.event)
         if not event_handler:
             self.log.error(f"No handler found for event: {event.event}")

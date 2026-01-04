@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 from pydantic import BaseModel
 from models.board_models import PropertySpace, BoardSpace
+import random
 
 
 class GameEvent(BaseModel):
@@ -21,7 +22,13 @@ class SessionInit(GameEvent):
 
 
 class PlayerRollDice(GameEvent):
-    dice_roll: int
+    _dice_roll: int | None = None
+    
+    @property
+    def dice_roll(self) -> int:
+        if self._dice_roll is None:
+            self._dice_roll = random.randint(1, 10)
+        return self._dice_roll
 
 
 class PlayerMoved(GameEvent):

@@ -1,6 +1,6 @@
 import websockets
 from utils.logger import get_logger
-from websockets.asyncio.server import ServerConnection
+from fastapi import FastAPI, WebSocket
 from rich import print_json
 import yaml
 import json
@@ -14,7 +14,7 @@ log = get_logger("test-server")
 CURRENT_DIR = Path(__file__).parent
 
 
-async def event_router(websocket: ServerConnection) -> None:
+async def event_router(websocket: WebSocket) -> None:
     """Handler for websocket connections. Messages are expected to be JSON."""
 
     # Add client on connect

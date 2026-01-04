@@ -1,7 +1,7 @@
 from utils.wsp_utils import send_wsp_event
 from models.wsp_schemas import WSPEvent
 from models.game_state import GameState
-from websockets.asyncio.server import ServerConnection
+from fastapi import FastAPI, WebSocket
 from typing import Dict, Optional
 from core.websocket_service import get_websocket_service
 from models.board_models import BoardSpace
@@ -11,7 +11,7 @@ websocket_service = get_websocket_service()
 
 
 class ShowDialog:
-    def __init__(self, ws: ServerConnection):
+    def __init__(self, ws: WebSocket):
         self.ws = ws
     
     async def _show_dialog(self, *,

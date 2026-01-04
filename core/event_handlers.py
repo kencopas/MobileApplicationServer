@@ -1,6 +1,6 @@
 import random
 from typing import Dict
-from websockets.asyncio.server import ServerConnection
+from fastapi import FastAPI, WebSocket
 
 from app import event_handler_registry, state_manager
 
@@ -29,7 +29,7 @@ async def process_and_update(game_id: str):
 
 
 @event_handler_registry.event("connectionClosed")
-async def handle_connection_closed(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> None:
+async def handle_connection_closed(ws: WebSocket, game_id: str, user_id: str, data: Dict | None) -> None:
     disconnected_users = websocket_service.get_closed_websockets()
     for gid, uids in disconnected_users.items():
         for uid in uids:
@@ -39,7 +39,7 @@ async def handle_connection_closed(ws: ServerConnection, game_id: str, user_id: 
 
 
 @event_handler_registry.event("payRentConfirmation")
-async def handle_pay_rent(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
+async def handle_pay_rent(ws: WebSocket, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
 
     user_state = state_manager.get_user_state(user_id)
     game_state = state_manager.get_game_state(game_id)
@@ -66,7 +66,7 @@ async def handle_pay_rent(ws: ServerConnection, game_id: str, user_id: str, data
 
 
 @event_handler_registry.event("buyProperty")
-async def handle_buy_property(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
+async def handle_buy_property(ws: WebSocket, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
     
     user_state = state_manager.get_user_state(user_id)
     game_state = state_manager.get_game_state(game_id)
@@ -88,7 +88,7 @@ async def handle_buy_property(ws: ServerConnection, game_id: str, user_id: str, 
 
 
 @event_handler_registry.event("onlineGame")
-async def handle_online_game(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
+async def handle_online_game(ws: WebSocket, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
 
     # Create state if it doesn't exist
     state_manager.initialize_session(user_id=user_id, game_id=game_id)
@@ -102,15 +102,14 @@ async def handle_online_game(ws: ServerConnection, game_id: str, user_id: str, d
 
 
 @event_handler_registry.event("monopolyMove")
-async def handle_monopoly_move(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
+async def handle_monopoly_move(ws: WebSocket, game_id: str, user_id: str, data: Dict | None) -> WSPEvent | None:
     """Handle a Monopoly game move event."""
 
     await event_bus.publish(
         DefaultPhase.INPUT,
         PlayerRollDice(
             game_id=game_id,
-            user_id=user_id,
-            dice_roll=(random.randint(1, 6) + random.randint(1, 6))
+            user_id=user_id
         )
     )
 
@@ -118,7 +117,7 @@ async def handle_monopoly_move(ws: ServerConnection, game_id: str, user_id: str,
 
 
 @event_handler_registry.event("sessionInit")
-async def handle_session_init(ws: ServerConnection, game_id: str, user_id: str, data: Dict | None) -> WSPEvent:
+async def handle_session_init(ws: WebSocket, game_id: str, user_id: str, data: Dict | None) -> WSPEvent:
     """Handle session initialization or restoration.
 
     Expected Data:

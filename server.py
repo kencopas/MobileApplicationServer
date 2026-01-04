@@ -1,6 +1,6 @@
 import websockets
 from utils.logger import get_logger
-from websockets.asyncio.server import ServerConnection
+from fastapi import FastAPI, WebSocket
 from app import event_handler_registry
 import core.event_handlers  # Ensure event handlers are registered
 import core.event_bus_listeners
@@ -16,7 +16,7 @@ log = get_logger("websocket-server")
 websocket_service = get_websocket_service()
 
 
-async def event_router(websocket: ServerConnection) -> None:
+async def event_router(websocket: WebSocket) -> None:
     """Handler for websocket connections. Messages are expected to be JSON."""
 
     # Add client on connect
