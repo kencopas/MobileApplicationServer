@@ -7,6 +7,10 @@ log = get_logger("api_server")
 
 app = FastAPI()
 
+@app.get('/')
+async def home():
+    return {"status": "Server is up and running!"}
+
 # -----------------------
 # HTTP (Lobby / Lifecycle)
 # -----------------------

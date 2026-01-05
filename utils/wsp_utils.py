@@ -2,7 +2,7 @@ from logging import Logger
 from typing import Any, Callable, Optional, Dict, Awaitable
 import json
 
-from websockets import WebSocket
+from fastapi import WebSocket
 from models.wsp_schemas import WSPEvent
 import pydantic
 
@@ -56,9 +56,10 @@ async def send_wsp_event(ws: WebSocket, event: WSPEvent) -> None:
         ws (WebSocket): The WebSocket connection to send the event through.
         event (WSPEvent): The WSPEvent object to send.
     """
-    if not validate_wsp(event.model_dump_json()):
+    event_json = event.model_dump_json()
+    if not validate_wsp(event_json):
         raise ValueError("Invalid WSPEvent data")
-    await ws.send(event.model_dump_json())
+    await ws.send_text(event_json)
 
 
 class EventHandlerRegistry:

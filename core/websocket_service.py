@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket
 from websockets.protocol import State
-from typing import List, Dict, Set
+from typing import Tuple, Dict, Set
 from functools import lru_cache
 
 
@@ -13,12 +13,27 @@ class WebsocketService:
     def __init__(self):
         self._websockets_by_user = {}
         self._websockets_by_game = {}
+        self._ids_by_websocket = {}
     
     def register_websocket(self, ws: WebSocket, user_id: str, game_id: str) -> None:
+        self._ids_by_websocket[ws] = (user_id, game_id)
         self._websockets_by_user[user_id] = ws
         if self._websockets_by_game.get(game_id) is None:
             self._websockets_by_game[game_id] = {}
         self._websockets_by_game[game_id][user_id] = ws
+    
+    def unregister_websocket(self, ws: WebSocket) -> None:
+        ids = self.get_ids_by_websocket(ws)
+        if not ids:
+            return
+        user_id, game_id = ids
+        del self._ids_by_websocket[ws]
+        del self._websockets_by_user[user_id]
+        if self._websockets_by_game.get(game_id, {}).get(user_id) is not None:
+            del self._websockets_by_game[game_id][user_id]
+    
+    def get_ids_by_websocket(self, ws: WebSocket) -> Tuple[str, str] | None:
+        return self._ids_by_websocket.get(ws)
     
     def get_websocket_by_user(self, user_id: str) -> WebSocket | None:
         return self._websockets_by_user.get(user_id)

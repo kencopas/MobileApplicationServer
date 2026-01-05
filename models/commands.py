@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, Optional
 from pydantic import BaseModel
 from models.events import PlayerMoved, GameEvent
 from models.board_models import PropertySpace, BoardSpace
@@ -7,6 +7,13 @@ from models.board_models import PropertySpace, BoardSpace
 class StateCommand(BaseModel):
     game_id: str
     user_id: Optional[str] = ""
+
+    @property
+    def ids(self) -> Dict:
+        return {
+            "game_id": self.game_id,
+            "user_id": self.user_id
+        }
 
     def to_event(self) -> GameEvent:
         ...

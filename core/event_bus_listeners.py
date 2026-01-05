@@ -22,13 +22,11 @@ event_bus = get_event_bus()
 async def handle_payed_rent(event: PayedRent):
     return [
         ModifyFunds(
-            game_id=event.game_id,
-            user_id=event.user_id,
+            **event.ids,
             money_dollars=-event.rent_dollars
         ),
         ModifyFunds(
-            game_id=event.game_id,
-            user_id=event.opponent_id,
+            **event.ids,
             money_dollars=event.rent_dollars
         ),
         EndTurn(**event.ids)
@@ -51,8 +49,7 @@ async def handle_buy_property(event: PurchasedProperty):
 async def check_if_passed_boot(event: PlayerMoved):
     if event.old_position >= event.new_position:
         return ModifyFunds(
-            user_id=event.user_id,
-            game_id=event.game_id,
+            **event.ids,
             money_dollars=200
         )
 
@@ -91,7 +88,7 @@ async def handle_property_landing(event: PlayerMoved):
             message=f"You already own this property.",
             space=landed_space
         )
-        return EndTurn(game_id=event.game_id, user_id=event.user_id)
+        return EndTurn(**event.ids)
     
     rent = 100  # Hard-coded value
 
@@ -140,8 +137,7 @@ async def update_player_position(event: PlayerRollDice):
     new_space = game_state.game_board[new_position]
 
     return MovePlayer(
-        game_id=event.game_id,
-        user_id=event.user_id,
+        **event.ids,
         old_position=user_state.position,
         new_position=new_position,
         space=new_space

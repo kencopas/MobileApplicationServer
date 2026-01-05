@@ -1,6 +1,5 @@
-import websockets
+from fastapi import WebSocket, WebSocketDisconnect
 from utils.logger import get_logger
-from fastapi import FastAPI, WebSocket
 from app import event_handler_registry
 import core.event_handlers  # Ensure event handlers are registered
 import core.event_bus_listeners
@@ -10,58 +9,68 @@ from models.wsp_schemas import WSPEvent
 
 
 # Track all connected clients
-_connected_clients = set()
+_connected_clients: set[WebSocket] = set()
 
 log = get_logger("websocket-server")
 websocket_service = get_websocket_service()
 
 
 async def event_router(websocket: WebSocket) -> None:
-    """Handler for websocket connections. Messages are expected to be JSON."""
+    """
+    FastAPI WebSocket handler.
+    Messages are expected to be JSON-encoded strings.
+    """
 
-    # Add client on connect
     _connected_clients.add(websocket)
-    log.info(f"Client connected: {websocket}")
+    log.info(f"Client connected: {websocket.client}")
 
     try:
-        # Wait for websocket events
-        async for message in websocket:
+        while True:
+            # Receive raw text message
+            message = await websocket.receive_text()
 
-            # Validate incoming message
+            # Validate and parse incoming message
             event = validate_wsp(message)
 
-            user_id = event.data.get('userId')
-            game_id = event.data.get('onlineGameId')
+            user_id = event.data["userId"]
+            game_id = event.data["onlineGameId"]
+
             websocket_service.register_websocket(
                 ws=websocket,
                 user_id=user_id,
-                game_id=game_id
+                game_id=game_id,
             )
 
             log.info(f"Received:\n\n{event.model_dump_json(indent=4)}")
+
             response_event = await event_handler_registry.handle_event(
                 ws=websocket,
                 user_id=user_id,
                 game_id=game_id,
-                event=event
+                event=event,
             )
 
             if not response_event:
-                log.info(f"No response event generated for incoming event: {event.event}")
+                log.info(
+                    f"No response event generated for incoming event: {event.event}"
+                )
                 continue
 
             await send_wsp_event(websocket, response_event)
 
-    except websockets.ConnectionClosed:
+    except WebSocketDisconnect:
         log.info("Client disconnected, broadcasting disconnect...")
+
         await event_handler_registry.handle_event(
             ws=None,
             user_id=None,
             game_id=None,
-            event=WSPEvent(event="connectionClosed")
+            event=WSPEvent(event="connectionClosed"),
         )
 
+    except Exception as exc:
+        log.exception(f"Unhandled websocket error: {exc}")
+
     finally:
-        # Always remove on disconnect
-        if websocket in _connected_clients:
-            _connected_clients.remove(websocket)
+        _connected_clients.discard(websocket)
+        websocket_service.unregister_websocket(websocket)
