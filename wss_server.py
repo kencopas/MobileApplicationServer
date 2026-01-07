@@ -1,21 +1,48 @@
 from fastapi import WebSocket, WebSocketDisconnect
-from utils.logger import get_logger
+import json
+
 from app import event_handler_registry
 import core.event_handlers  # Ensure event handlers are registered
 import core.event_bus_listeners
 from core.websocket_service import get_websocket_service
-from utils.wsp_utils import validate_wsp, send_wsp_event
+from core.room_manager import get_room_manager
+
 from models.wsp_schemas import WSPEvent
+from utils.wsp_utils import validate_wsp, send_wsp_event
+from utils.logger import get_logger
 
 
 # Track all connected clients
 _connected_clients: set[WebSocket] = set()
+_lobby_connections: set[WebSocket] = set()
 
 log = get_logger("websocket-server")
 websocket_service = get_websocket_service()
 
 
-async def event_router(websocket: WebSocket) -> None:
+async def lobby_handler(websocket: WebSocket, room_id: str) -> None:
+    _lobby_connections.add(websocket)
+    log.info(f"Client connected to lobby ws: {websocket.client}")
+    
+    get_room_manager().register_websocket(websocket, room_id)
+
+    try:
+        while True:
+            await websocket.receive_text()
+
+    except WebSocketDisconnect:
+        log.info("Client disconnected, broadcasting disconnect...")
+        pass
+
+    except Exception as exc:
+        log.exception(f"Unhandled websocket error: {exc}")
+
+    finally:
+        _lobby_connections.discard(websocket)
+        websocket_service.unregister_websocket(websocket)
+
+
+async def event_router(websocket: WebSocket, game_id: str) -> None:
     """
     FastAPI WebSocket handler.
     Messages are expected to be JSON-encoded strings.
@@ -33,7 +60,6 @@ async def event_router(websocket: WebSocket) -> None:
             event = validate_wsp(message)
 
             user_id = event.data["userId"]
-            game_id = event.data["onlineGameId"]
 
             websocket_service.register_websocket(
                 ws=websocket,

@@ -2,17 +2,19 @@ from typing import Dict, Set
 import secrets
 import string
 from pydantic import BaseModel, Field
+from functools import lru_cache
+from fastapi import WebSocket
 
 from utils.logger import get_logger
+
+
+log = get_logger("room_manager")
 
 
 def generate_room_code(length: int = 6) -> str:
     """Creates a 6-character alphanumeric string as a room code"""
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for _ in range(length))
-
-
-log = get_logger("room_manager")
 
 
 class Room(BaseModel):
@@ -33,28 +35,63 @@ class Room(BaseModel):
 class RoomManager:
     rooms: Dict[str, Room]
     players: Dict[str, str | None]
+    websockets: Dict[str, Set[WebSocket]]
 
     def __init__(self):
         self.rooms = {}
         self.players = {}
+        self.websockets = {}
     
-    def join_room(self, room_id: str, player_id: str) -> None:
+    def register_websocket(self, ws: WebSocket, room_id: str) -> None:
+        self.websockets[room_id].add(ws)
+    
+    def discard_websocket(self, ws: WebSocket, room_id: str) -> None:
+        self.websockets[room_id].pop(ws)
+
+    async def broadcast(self, event: str, player_id: str, room_id: str) -> None:
+        for ws in self.websockets[room_id]:
+            await ws.send_json({
+                "event": event,
+                "player_id": player_id
+            })
+
+    async def join_room(self, room_id: str, player_id: str) -> None:
+        # Edge cases
         if not room_id in self.rooms:
             raise ValueError(f"Player {player_id} attempted to join non-existent room {room_id}.")
         if self.rooms[room_id].has_player(player_id):
             log.warning(f"Player {player_id} attempted to join room {room_id} which they are already in.")
             return
+    
+        # Add player to the room
         self.rooms[room_id].add_player(player_id)
         self.players[player_id] = room_id
 
-    def leave_room(self, room_id: str, player_id: str) -> None:
+        # Broadcast player join
+        await self.broadcast(
+            event="player_join",
+            player_id=player_id,
+            room_id=room_id
+        )
+
+    async def leave_room(self, room_id: str, player_id: str) -> None:
+        # Edge cases
         if not room_id in self.rooms:
             raise ValueError(f"Player {player_id} attempted to leave non-existent room {room_id}")
         if not self.rooms[room_id].has_player(player_id):
             log.warning(f"Player {player_id} attempted to leave room {room_id} which they are not in.")
             return
+        
+        # Remove player from the room
         self.rooms[room_id].remove_player(player_id)
         self.players[player_id] = None
+
+        # Broadcast room update
+        await self.broadcast(
+            event="player_left",
+            player_id=player_id,
+            room_id=room_id
+        )
     
     def create_room(self, player_id: str) -> str:
         if self.players.get(player_id):
@@ -73,5 +110,11 @@ class RoomManager:
             members={player_id}
         )
         self.players[player_id] = room_code
+        self.websockets[room_code] = set()
 
         return room_code
+
+
+@lru_cache(maxsize=1)
+def get_room_manager() -> RoomManager:
+    return RoomManager()
